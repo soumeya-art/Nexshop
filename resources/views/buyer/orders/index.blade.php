@@ -43,7 +43,7 @@
             <span>Commande #{{ $order->id }} — {{ $order->date_commande?->format('d/m/Y H:i') }}</span>
             <span class="statut statut-{{ $order->statut }}">{{ $order->statut }}</span>
           </h3>
-          <div class="detail">{{ number_format($order->montant_total, 0, ',', ' ') }} € — {{ $order->details->count() }} article(s)</div>
+          <div class="detail">{{ money_fdj($order->montant_total) }} — {{ $order->details->count() }} article(s)</div>
         </a>
       @endforeach
     </div>

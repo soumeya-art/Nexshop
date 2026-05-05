@@ -13,7 +13,7 @@ class AdminCategoryController extends Controller
         $categories = Categorie::withCount('produits')->orderBy('nom')->paginate(15);
 
         return view('admin.admin', [
-            'section'    => 'categories',
+            'section' => 'categories',
             'categories' => $categories,
             'totalSales' => 0, 'activeUsers' => 0, 'pendingReviews' => 0,
             'categoriesCount' => 0, 'salesTrend' => 0, 'usersTrend' => 0,
@@ -24,12 +24,13 @@ class AdminCategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nom'         => 'required|string|max:100',
+            'nom' => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
-            'icone'       => 'nullable|string|max:50',
+            'icone' => 'nullable|string|max:50',
+            'image_url' => 'nullable|string|max:500',
         ]);
 
-        Categorie::create($request->only('nom', 'description', 'icone'));
+        Categorie::create($request->only('nom', 'description', 'icone', 'image_url'));
 
         return back()->with('success', 'Catégorie créée avec succès.');
     }
@@ -37,12 +38,13 @@ class AdminCategoryController extends Controller
     public function update(Request $request, Categorie $category)
     {
         $request->validate([
-            'nom'         => 'required|string|max:100',
+            'nom' => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
-            'icone'       => 'nullable|string|max:50',
+            'icone' => 'nullable|string|max:50',
+            'image_url' => 'nullable|string|max:500',
         ]);
 
-        $category->update($request->only('nom', 'description', 'icone'));
+        $category->update($request->only('nom', 'description', 'icone', 'image_url'));
 
         return back()->with('success', 'Catégorie modifiée avec succès.');
     }
@@ -50,6 +52,7 @@ class AdminCategoryController extends Controller
     public function destroy(Categorie $category)
     {
         $category->delete();
+
         return back()->with('success', 'Catégorie supprimée avec succès.');
     }
 }

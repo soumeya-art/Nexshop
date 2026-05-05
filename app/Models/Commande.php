@@ -8,7 +8,8 @@ class Commande extends Model
 {
     protected $table    = 'commandes';
     protected $fillable = [
-        'client_id', 'montant_total', 'statut', 'adresse_livraison',
+        'client_id', 'boutique_id', 'montant_total', 'statut', 'adresse_livraison',
+        'zone_livraison', 'frais_livraison',
         'mode_paiement', 'statut_paiement', 'date_commande', 'date_livraison',
     ];
 
@@ -16,11 +17,17 @@ class Commande extends Model
         'date_commande'  => 'datetime',
         'date_livraison' => 'datetime',
         'montant_total'  => 'decimal:2',
+        'frais_livraison' => 'decimal:2',
     ];
 
     public function client()
     {
         return $this->belongsTo(User::class, 'client_id');
+    }
+
+    public function boutique()
+    {
+        return $this->belongsTo(Boutique::class, 'boutique_id');
     }
 
     public function details()

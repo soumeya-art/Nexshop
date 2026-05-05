@@ -53,7 +53,7 @@
             <span class="prod-rcount">({{ number_format($note, 1) }})</span>
           </div>
           <div class="prod-foot">
-            <div><span class="prod-price">{{ number_format($p->prix, 0, ',', ' ') }} €</span></div>
+            <div><span class="prod-price">{{ money_fdj($p->prix) }}</span></div>
             <div class="prod-btns">
               <a href="{{ route('buyer.products.show', $p) }}" class="btn-eye"><i class="fa-regular fa-eye"></i></a>
               <form action="{{ route('buyer.cart.add') }}" method="post" style="display:inline">

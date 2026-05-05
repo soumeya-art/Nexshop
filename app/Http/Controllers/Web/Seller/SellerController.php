@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Web\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Models\Categorie;
 use App\Models\Commande;
 use App\Models\CommandeDetail;
 use App\Models\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SellerController extends Controller
 {
@@ -27,7 +29,7 @@ class SellerController extends Controller
             ->distinct('commande_id')->count('commande_id');
 
         $activeProducts = Produit::where('vendeur_id', $user->id)
-            ->where('statut', 'actif')->count();
+            ->actif()->count();
 
         $avgRating = round((float) DB::table('avis')
             ->whereIn('produit_id', $myProductIds)
@@ -35,24 +37,56 @@ class SellerController extends Controller
             ->avg('note'), 1);
 
         // Commandes récentes
-        $recentOrders = Commande::whereHas('details', function ($q) use ($myProductIds) {
+        if (Schema::hasColumn('commandes', 'boutique_id')) {
+            $recentOrders = Commande::query()
+                ->where('boutique_id', $user->boutique?->id)
+                ->with('client')
+                ->latest('date_commande')
+                ->limit(5)
+                ->get();
+        } else {
+            $recentOrders = Commande::whereHas('details', function ($q) use ($myProductIds) {
                 $q->whereIn('produit_id', $myProductIds);
             })
-            ->with('client')
-            ->latest('date_commande')
-            ->limit(5)
-            ->get();
+                ->with('client')
+                ->latest('date_commande')
+                ->limit(5)
+                ->get();
+        }
 
         // Profil boutique
         $vendeurProfil = $user->vendeurProfil;
+        $boutique = $user->boutique;
         $totalReviews = DB::table('avis')
             ->whereIn('produit_id', $myProductIds)
             ->where('statut', 'approuve')
             ->count();
 
+        $sellerCategoryId = $user->vendeur_categorie_id
+            ?? Produit::where('vendeur_id', $user->id)->value('categorie_id');
+        $categories = Categorie::when($sellerCategoryId, function ($q) use ($sellerCategoryId) {
+            $q->where('id', $sellerCategoryId);
+        })->orderBy('nom')->get();
+
+        $monthSales = 0.0;
+        if ($user->sellerHasBasicStats()) {
+            $monthSales = (float) CommandeDetail::query()
+                ->join('commandes', 'commandes.id', '=', 'commande_details.commande_id')
+                ->whereIn('commande_details.produit_id', $myProductIds)
+                ->where('commandes.statut', '!=', 'annulee')
+                ->where('commandes.date_commande', '>=', now()->startOfMonth())
+                ->sum(DB::raw('commande_details.quantite * commande_details.prix_unitaire'));
+        }
+
+        $subscriptionUsed = $user->sellerMonthlyOrderCount();
+        $subscriptionLimit = $user->sellerFreeMonthlyLimit();
+        $subscriptionDaysLeft = $user->sellerSubscriptionDaysRemaining();
+
         return view('seller.seller', compact(
             'section', 'totalSales', 'totalOrders', 'activeProducts',
-            'avgRating', 'recentOrders', 'vendeurProfil', 'totalReviews'
+            'avgRating', 'recentOrders', 'vendeurProfil', 'boutique', 'totalReviews',
+            'categories', 'sellerCategoryId',
+            'monthSales', 'subscriptionUsed', 'subscriptionLimit', 'subscriptionDaysLeft'
         ));
     }
 }

@@ -3,624 +3,826 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NexShop — Marketplace</title>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@include('partials.theme-init')
+<title>NexShop — Marketplace Djibouti</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="{{ asset('css/app.css') }}"></head>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#1a1710;color:#f0f0f0;font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;overflow-x:hidden;padding:0}
+a{color:inherit;text-decoration:none}img{display:block;max-width:100%}ul{list-style:none}
+h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;line-height:1.1}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#1a1710}::-webkit-scrollbar-thumb{background:#e8772e;border-radius:3px}
+
+:root{--accent:#e8772e;--accent2:#f09044;--bg:#1a1710;--bg2:#211e16;--bg3:#2a261e;--border:rgba(255,255,255,.07);--T:.25s ease}
+
+/* ════════════ NAVBAR ════════════ */
+.dm-nav{position:sticky;top:0;z-index:1000;display:flex;align-items:center;padding:0 48px;height:60px;background:rgba(26,23,16,.95);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.dm-logo{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:800;color:#fff;white-space:nowrap;flex-shrink:0}
+.dm-logo span{color:var(--accent)}
+.dm-links{display:flex;gap:32px;margin-left:52px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.dm-links a{color:rgba(255,255,255,.45);transition:color var(--T)}
+.dm-links a:hover{color:var(--accent)}
+.dm-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.dm-icon{position:relative;width:36px;height:36px;border-radius:50%;background:transparent;border:none;color:rgba(255,255,255,.6);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color var(--T)}
+.dm-icon:hover{color:var(--accent)}
+.dm-badge{position:absolute;top:-1px;right:-1px;width:16px;height:16px;border-radius:50%;background:var(--accent);color:#fff;font-size:8px;font-weight:800;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;justify-content:center}
+.dm-btn{padding:8px 20px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all var(--T);text-decoration:none;text-transform:uppercase;letter-spacing:.06em}
+.dm-btn--ghost{background:transparent;border:1.5px solid rgba(255,255,255,.12);color:#fff}
+.dm-btn--ghost:hover{border-color:var(--accent);color:var(--accent)}
+.dm-btn--fill{background:var(--accent);border:none;color:#fff}
+.dm-btn--fill:hover{background:var(--accent2)}
+.dm-hamburger{display:none;background:none;border:none;color:#fff;font-size:20px;cursor:pointer;margin-left:auto}
+
+/* ════════════ HERO ════════════ */
+.dm-hero{display:grid;grid-template-columns:1.1fr .9fr;min-height:calc(100vh - 60px);background:var(--bg);position:relative;overflow:hidden}
+.dm-hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(232,119,46,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(232,119,46,.025) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+.dm-hero-left{display:flex;flex-direction:column;justify-content:center;padding:80px 48px 80px 80px;position:relative;z-index:2}
+.dm-hero-tag{display:inline-flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:28px;width:fit-content}
+.dm-hero-tag::before{content:'';width:28px;height:2px;background:var(--accent);border-radius:1px}
+.dm-hero-title{font-size:clamp(34px,4.2vw,56px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:20px;color:#fff}
+.dm-hero-title em{font-family:'Playfair Display',serif;font-style:italic;color:var(--accent)}
+.dm-hero-sub{font-size:14px;color:rgba(255,255,255,.45);max-width:400px;line-height:1.75;margin-bottom:12px}
+.dm-hero-bullet{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:32px;display:flex;align-items:center;gap:8px}
+.dm-hero-bullet::before{content:'→';color:var(--accent);font-weight:700}
+.dm-hero-btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.dm-hero-btns .btn-p{background:var(--accent);color:#fff;border:none;padding:14px 30px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--T);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(232,119,46,.35)}
+.dm-hero-btns .btn-p:hover{background:var(--accent2);transform:translateY(-2px)}
+.dm-hero-btns .btn-g{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.15);padding:13px 28px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--T);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+.dm-hero-btns .btn-g:hover{border-color:var(--accent);color:var(--accent)}
+a.btn-p,a.btn-g{text-decoration:none}
+
+.dm-hero-right{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#1e1b14}
+.dm-hero-right img{width:100%;height:100%;object-fit:cover;opacity:.85;transition:transform 10s ease}
+.dm-hero:hover .dm-hero-right img{transform:scale(1.04)}
+.dm-hero-right::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,transparent 35%);z-index:1}
+.dm-float-top{position:absolute;top:36px;right:36px;z-index:3;background:var(--accent);border-radius:14px;padding:14px 20px;color:#fff;font-family:'Space Grotesk',sans-serif;text-align:center}
+.dm-float-top .fn{font-size:22px;font-weight:800;line-height:1}
+.dm-float-top .fl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;opacity:.85;margin-top:2px}
+.dm-float-mid{position:absolute;top:50%;right:20%;transform:translateY(-50%);z-index:3;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);text-align:center}
+.dm-float-bot{position:absolute;bottom:36px;left:36px;z-index:3;background:rgba(26,23,16,.85);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:14px;padding:14px 22px;display:flex;align-items:center;gap:14px}
+.dm-float-bot .fn{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:800;color:#fff}
+.dm-float-bot .fl{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.06em}
+.dm-float-bot .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+/* ════════════ STATS BAR ════════════ */
+.dm-stats{display:grid;grid-template-columns:repeat(4,1fr);background:#1e1b14;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.dm-stat{padding:22px 32px;border-right:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.dm-stat:last-child{border-right:none}
+.dm-stat .sn{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--accent)}
+.dm-stat .sl{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+
+/* ════════════ TRUST TICKER ════════════ */
+.dm-trust{background:var(--accent);padding:11px 0;overflow:hidden;position:relative}
+.dm-trust-track{display:flex;gap:32px;width:max-content;animation:tScroll 28s linear infinite;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;padding:0 40px}
+.dm-trust-track span{white-space:nowrap;display:flex;align-items:center;gap:8px}
+.dm-trust-track .dot{opacity:.45;font-size:8px}
+@keyframes tScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ════════════ SECTIONS ════════════ */
+.dm-section{padding:72px 80px}
+.dm-sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px}
+.dm-sec-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,2.8vw,36px);font-weight:800;letter-spacing:-.02em;color:#fff}
+.dm-see-all{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:6px;transition:gap var(--T);white-space:nowrap}
+.dm-see-all:hover{gap:10px}
+
+/* ════════════ CATEGORIES ════════════ */
+.dm-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.dm-cat{position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:16px;cursor:pointer;border:1px solid var(--border);transition:border-color .3s,transform .3s}
+.dm-cat:hover{border-color:rgba(232,119,46,.3);transform:translateY(-4px)}
+.dm-cat img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.dm-cat:hover img{transform:scale(1.05)}
+.dm-cat::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.75) 0%,transparent 50%)}
+.dm-cat-info{position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:2}
+.dm-cat-name{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff;font-style:italic;margin-bottom:2px}
+.dm-cat-count{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.04em}
+
+/* ════════════ PRODUCTS ════════════ */
+.dm-prods{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.dm-prod{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .3s,transform .3s,box-shadow .3s}
+.dm-prod:hover{border-color:rgba(232,119,46,.25);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.dm-prod-img{position:relative;aspect-ratio:1/1;overflow:hidden;background:#2a261e}
+.dm-prod-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.dm-prod:hover .dm-prod-img img{transform:scale(1.05)}
+.dm-prod-badge{position:absolute;top:10px;left:10px;padding:4px 12px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff}
+.dm-prod-badge.b-new{background:#3b82f6}
+.dm-prod-badge.b-pop{background:#22c55e}
+.dm-prod-badge.b-promo{background:var(--accent)}
+.dm-prod-acts{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px;opacity:0;transition:opacity .25s}
+.dm-prod:hover .dm-prod-acts{opacity:1}
+.dm-prod-act{width:32px;height:32px;background:rgba(26,23,16,.8);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;backdrop-filter:blur(6px)}
+.dm-prod-act:hover{background:var(--accent);border-color:var(--accent)}
+.dm-prod-body{padding:14px 16px 16px}
+.dm-prod-name{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;line-height:1.3}
+.dm-prod-name a{color:inherit;text-decoration:none}
+.dm-prod-sub{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+.dm-prod-foot{display:flex;align-items:center;justify-content:space-between}
+.dm-prod-price{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:800;color:var(--accent)}
+.dm-prod-old{font-size:11px;color:rgba(255,255,255,.3);text-decoration:line-through;margin-left:6px;font-weight:400}
+.dm-add{width:32px;height:32px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.dm-add:hover{background:var(--accent2);transform:scale(1.08)}
+a.dm-add{text-decoration:none;color:#fff}
+
+/* ════════════ CTA VENDEUR ════════════ */
+.dm-cta{background:var(--bg2);border-top:1px solid var(--border);padding:64px 80px;display:flex;align-items:center;justify-content:space-between;gap:48px}
+.dm-cta-tag{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dm-cta-tag::before{content:'';width:20px;height:2px;background:var(--accent);border-radius:1px}
+.dm-cta h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,2.8vw,36px);font-weight:800;color:#fff;line-height:1.15;margin-bottom:12px}
+.dm-cta h2 span{color:var(--accent)}
+.dm-cta p{font-size:14px;color:rgba(255,255,255,.4);line-height:1.7;max-width:480px}
+.dm-cta-btn{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1.5px solid var(--accent);color:var(--accent);padding:14px 30px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--T);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;text-decoration:none;flex-shrink:0}
+.dm-cta-btn:hover{background:var(--accent);color:#fff}
+.dm-cta-btn i{transition:transform var(--T)}
+.dm-cta-btn:hover i{transform:translateX(4px)}
+
+/* ════════════ NEWSLETTER ════════════ */
+.dm-nl{background:var(--bg);border-top:1px solid var(--border);padding:48px 80px;display:flex;align-items:center;justify-content:space-between;gap:40px}
+.dm-nl-title{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.dm-nl-sub{font-size:12px;color:rgba(255,255,255,.35);margin-top:4px}
+.dm-nl-form{display:flex;gap:0;flex-shrink:0}
+.dm-nl-form input{background:var(--bg3);border:1.5px solid var(--border);border-right:none;border-radius:10px 0 0 10px;padding:12px 20px;color:#fff;font-family:'Inter',sans-serif;font-size:13px;outline:none;min-width:240px;transition:border-color var(--T)}
+.dm-nl-form input:focus{border-color:var(--accent)}
+.dm-nl-form input::placeholder{color:rgba(255,255,255,.3)}
+.dm-nl-form button{background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:0 10px 10px 0;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background var(--T);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
+.dm-nl-form button:hover{background:var(--accent2)}
+
+/* ════════════ FOOTER ════════════ */
+.dm-footer{background:#141210;padding:48px 80px 0}
+.dm-footer-top{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:48px;padding-bottom:36px;border-bottom:1px solid var(--border)}
+.dm-f-brand{}
+.dm-f-logo{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:12px}
+.dm-f-logo span{color:var(--accent)}
+.dm-f-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;max-width:320px;margin-bottom:16px}
+.dm-f-socials{display:flex;gap:8px}
+.dm-f-socials a{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.35);font-size:13px;transition:all var(--T)}
+.dm-f-socials a:hover{border-color:var(--accent);color:var(--accent)}
+.dm-f-col h4{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:16px}
+.dm-f-col a{display:block;font-size:13px;color:rgba(255,255,255,.4);padding:5px 0;transition:color var(--T)}
+.dm-f-col a:hover{color:#fff}
+.dm-footer-bottom{display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+.dm-f-copy{font-size:11px;color:rgba(255,255,255,.2);white-space:nowrap}
+.dm-f-bottom-links{display:flex;gap:20px;font-size:11px}
+.dm-f-bottom-links a{color:rgba(255,255,255,.25);transition:color var(--T)}
+.dm-f-bottom-links a:hover{color:var(--accent)}
+
+/* ════════════ DRAWER ════════════ */
+.dm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1999;display:none}
+.dm-overlay.open{display:block}
+.dm-drawer{position:fixed;top:0;right:-100%;width:280px;height:100%;background:var(--bg2);z-index:2000;border-left:1px solid var(--border);padding:28px 24px;transition:right .35s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.dm-drawer.open{right:0}
+.dm-drawer-close{position:absolute;top:18px;right:18px;background:var(--bg3);border:none;color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dm-drawer-logo{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:800;margin-bottom:28px;color:#fff}
+.dm-drawer-logo span{color:var(--accent)}
+.dm-drawer a.dl{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);font-size:14px;color:rgba(255,255,255,.5);font-family:'Space Grotesk',sans-serif;font-weight:500;transition:color var(--T)}
+.dm-drawer a.dl i{color:var(--accent);width:18px}
+.dm-drawer a.dl:hover{color:#fff}
+.dm-drawer-btns{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+
+/* ════════════ CATEGORY FILTERS ════════════ */
+.dm-cf{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.dm-cf button{background:var(--bg3);border:1px solid var(--border);color:rgba(255,255,255,.5);padding:7px 16px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all var(--T);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.dm-cf button:hover,.dm-cf button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ════════════ REVEAL ════════════ */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ════════════ TOAST ════════════ */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--bg2);border:1px solid rgba(232,119,46,.3);color:#fff;padding:13px 20px;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;z-index:9999;transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.4,0,.2,1);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast i{color:var(--accent)}
+
+/* ════════════ INFO SECTIONS ════════════ */
+.dm-info{padding:72px 80px;border-top:1px solid var(--border)}
+.dm-info-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(22px,2.4vw,32px);font-weight:800;color:#fff;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.dm-info-title i{color:var(--accent);font-size:.75em}
+.dm-info-sub{font-size:12px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;font-family:'Space Grotesk',sans-serif;font-weight:700;margin-bottom:28px}
+.dm-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.dm-info-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;transition:border-color .3s,transform .3s}
+.dm-info-card:hover{border-color:rgba(232,119,46,.25);transform:translateY(-3px)}
+.dm-info-card h4{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.dm-info-card h4 i{color:var(--accent);font-size:14px}
+.dm-info-card p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7}
+.dm-info-text{font-size:14px;color:rgba(255,255,255,.5);line-height:1.8;max-width:780px}
+.dm-info-text strong{color:#fff}
+.dm-contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.dm-contact-form{display:flex;flex-direction:column;gap:14px}
+.dm-contact-form input,.dm-contact-form textarea{background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color var(--T);resize:none}
+.dm-contact-form input::placeholder,.dm-contact-form textarea::placeholder{color:rgba(255,255,255,.3)}
+.dm-contact-form input:focus,.dm-contact-form textarea:focus{border-color:var(--accent)}
+.dm-contact-form button{align-self:flex-start;background:var(--accent);color:#fff;border:none;padding:12px 28px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--T);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+.dm-contact-form button:hover{background:var(--accent2)}
+.dm-contact-info{display:flex;flex-direction:column;gap:18px}
+.dm-ci{display:flex;align-items:flex-start;gap:14px;font-size:14px;color:rgba(255,255,255,.5)}
+.dm-ci-ico{width:40px;height:40px;border-radius:12px;background:rgba(232,119,46,.1);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:15px;flex-shrink:0}
+.dm-ci strong{color:#fff;display:block;margin-bottom:2px}
+.dm-faq{display:flex;flex-direction:column;gap:12px}
+.dm-faq-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.dm-faq-q{padding:16px 20px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;border:none;background:none;width:100%;text-align:left;transition:color .2s}
+.dm-faq-q:hover{color:var(--accent)}
+.dm-faq-q i{color:var(--accent);font-size:11px;transition:transform .3s}
+.dm-faq-item.open .dm-faq-q i{transform:rotate(180deg)}
+.dm-faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;padding:0 20px;font-size:13px;color:rgba(255,255,255,.45);line-height:1.7}
+.dm-faq-item.open .dm-faq-a{max-height:300px;padding:0 20px 16px}
+
+@media(max-width:900px){
+  .dm-info{padding:56px 40px}
+  .dm-contact-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .dm-info{padding:40px 22px}
+}
+
+/* ════════════ LIGHT MODE ════════════ */
+html[data-theme='light'] body{background:#f5f7fb;color:#1e293b}
+html[data-theme='light'] .dm-nav{background:rgba(255,255,255,.96);border-bottom-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-logo{color:#0f172a}
+html[data-theme='light'] .dm-links a{color:rgba(15,23,42,.45)}
+html[data-theme='light'] .dm-links a:hover{color:var(--accent)}
+html[data-theme='light'] .dm-icon{color:rgba(15,23,42,.55)}
+html[data-theme='light'] .dm-icon:hover{color:var(--accent)}
+html[data-theme='light'] .dm-btn--ghost{border-color:rgba(15,23,42,.15);color:#0f172a}
+html[data-theme='light'] .dm-btn--ghost:hover{border-color:var(--accent);color:var(--accent)}
+html[data-theme='light'] .dm-hero{background:#f5f7fb}
+html[data-theme='light'] .dm-hero::before{background-image:linear-gradient(rgba(232,119,46,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(232,119,46,.04) 1px,transparent 1px)}
+html[data-theme='light'] .dm-hero-title{color:#0f172a}
+html[data-theme='light'] .dm-hero-sub{color:#64748b}
+html[data-theme='light'] .dm-hero-bullet{color:#64748b}
+html[data-theme='light'] .dm-hero-btns .btn-g{border-color:rgba(15,23,42,.15);color:#0f172a}
+html[data-theme='light'] .dm-hero-btns .btn-g:hover{border-color:var(--accent);color:var(--accent)}
+html[data-theme='light'] .dm-hero-right{background:#e8ecf2}
+html[data-theme='light'] .dm-hero-right::before{background:linear-gradient(90deg,#f5f7fb 0%,transparent 35%)}
+html[data-theme='light'] .dm-float-bot{background:rgba(255,255,255,.9);border-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-float-bot .fn{color:#0f172a}
+html[data-theme='light'] .dm-float-bot .fl{color:#64748b}
+html[data-theme='light'] .dm-stats{background:#eef2f9;border-color:rgba(15,23,42,.06)}
+html[data-theme='light'] .dm-stat{border-color:rgba(15,23,42,.06)}
+html[data-theme='light'] .dm-stat .sl{color:#64748b}
+html[data-theme='light'] .dm-section{background:#f5f7fb !important}
+html[data-theme='light'] .dm-section[style*='1e1b14']{background:#eef2f9 !important}
+html[data-theme='light'] .dm-sec-title{color:#0f172a}
+html[data-theme='light'] .dm-cat{border-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-cat:hover{border-color:rgba(232,119,46,.3)}
+html[data-theme='light'] .dm-prod{background:#fff;border-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-prod:hover{border-color:rgba(232,119,46,.25);box-shadow:0 12px 32px rgba(15,23,42,.1)}
+html[data-theme='light'] .dm-prod-img{background:#eef2f9}
+html[data-theme='light'] .dm-prod-name{color:#0f172a}
+html[data-theme='light'] .dm-prod-name a{color:#0f172a}
+html[data-theme='light'] .dm-prod-sub{color:#64748b}
+html[data-theme='light'] .dm-prod-act{background:rgba(255,255,255,.85);border-color:rgba(15,23,42,.1);color:#334155}
+html[data-theme='light'] .dm-cf button{background:#fff;border-color:rgba(15,23,42,.1);color:#64748b}
+html[data-theme='light'] .dm-cf button:hover,html[data-theme='light'] .dm-cf button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+html[data-theme='light'] .dm-cta{background:#eef2f9;border-color:rgba(15,23,42,.06)}
+html[data-theme='light'] .dm-cta h2{color:#0f172a}
+html[data-theme='light'] .dm-cta p{color:#64748b}
+html[data-theme='light'] .dm-nl{background:#f5f7fb;border-color:rgba(15,23,42,.06)}
+html[data-theme='light'] .dm-nl-title{color:#0f172a}
+html[data-theme='light'] .dm-nl-sub{color:#64748b}
+html[data-theme='light'] .dm-nl-form input{background:#fff;border-color:rgba(15,23,42,.12);color:#0f172a}
+html[data-theme='light'] .dm-nl-form input::placeholder{color:#94a3b8}
+html[data-theme='light'] .dm-footer{background:#e8ecf2}
+html[data-theme='light'] .dm-footer-top{border-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-f-logo{color:#0f172a}
+html[data-theme='light'] .dm-f-desc{color:#64748b}
+html[data-theme='light'] .dm-f-socials a{border-color:rgba(15,23,42,.1);color:#64748b}
+html[data-theme='light'] .dm-f-socials a:hover{border-color:var(--accent);color:var(--accent)}
+html[data-theme='light'] .dm-f-col h4{color:var(--accent)}
+html[data-theme='light'] .dm-f-col a{color:#475569}
+html[data-theme='light'] .dm-f-col a:hover{color:#0f172a}
+html[data-theme='light'] .dm-f-copy{color:#94a3b8}
+html[data-theme='light'] .dm-f-bottom-links a{color:#94a3b8}
+html[data-theme='light'] .dm-drawer{background:#fff;border-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-drawer-logo{color:#0f172a}
+html[data-theme='light'] .dm-drawer a.dl{color:#475569;border-color:rgba(15,23,42,.06)}
+html[data-theme='light'] .dm-drawer a.dl:hover{color:#0f172a}
+html[data-theme='light'] .dm-drawer-close{background:#f1f5f9;color:#334155}
+html[data-theme='light'] .toast{background:#fff;border-color:rgba(232,119,46,.2);color:#0f172a;box-shadow:0 8px 32px rgba(15,23,42,.12)}
+html[data-theme='light'] ::-webkit-scrollbar-track{background:#f5f7fb}
+html[data-theme='light'] .dm-info{border-color:rgba(15,23,42,.06)}
+html[data-theme='light'] .dm-info-title{color:#0f172a}
+html[data-theme='light'] .dm-info-sub{color:#64748b}
+html[data-theme='light'] .dm-info-card{background:#fff;border-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-info-card:hover{border-color:rgba(232,119,46,.25);box-shadow:0 8px 24px rgba(15,23,42,.06)}
+html[data-theme='light'] .dm-info-card h4{color:#0f172a}
+html[data-theme='light'] .dm-info-card p{color:#64748b}
+html[data-theme='light'] .dm-info-text{color:#475569}
+html[data-theme='light'] .dm-info-text strong{color:#0f172a}
+html[data-theme='light'] .dm-contact-form input,html[data-theme='light'] .dm-contact-form textarea{background:#fff;border-color:rgba(15,23,42,.12);color:#0f172a}
+html[data-theme='light'] .dm-contact-form input::placeholder,html[data-theme='light'] .dm-contact-form textarea::placeholder{color:#94a3b8}
+html[data-theme='light'] .dm-ci{color:#475569}
+html[data-theme='light'] .dm-ci strong{color:#0f172a}
+html[data-theme='light'] .dm-ci-ico{background:rgba(255,107,53,.08)}
+html[data-theme='light'] .dm-faq-item{background:#fff;border-color:rgba(15,23,42,.08)}
+html[data-theme='light'] .dm-faq-q{color:#0f172a}
+html[data-theme='light'] .dm-faq-a{color:#475569}
+
+/* ════════════ RESPONSIVE ════════════ */
+@media(max-width:1200px){
+  .dm-links{display:none}
+  .dm-cats{grid-template-columns:repeat(2,1fr)}
+  .dm-prods{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:900px){
+  .dm-hero{grid-template-columns:1fr;min-height:auto}
+  .dm-hero-left{padding:56px 40px}
+  .dm-hero-right{height:320px}
+  .dm-hero-right::before{background:linear-gradient(0deg,var(--bg) 0%,transparent 50%)}
+  .dm-float-top,.dm-float-mid,.dm-float-bot{display:none}
+  .dm-section{padding:56px 40px}
+  .dm-stats{grid-template-columns:repeat(2,1fr)}
+  .dm-prods{grid-template-columns:repeat(2,1fr)}
+  .dm-cta{flex-direction:column;padding:56px 40px;text-align:center;align-items:center}
+  .dm-cta p{max-width:100%}
+  .dm-nl{flex-direction:column;padding:40px;text-align:center}
+  .dm-nl-form{width:100%;max-width:380px}
+  .dm-nl-form input{min-width:0;flex:1}
+  .dm-footer{padding:40px 40px 0}
+  .dm-footer-top{grid-template-columns:1fr;gap:28px;text-align:center}
+  .dm-f-socials{justify-content:center}
+  .dm-footer-bottom{flex-direction:column;gap:10px;text-align:center}
+}
+@media(max-width:600px){
+  .dm-nav{padding:0 20px;gap:10px}
+  .dm-btn,.dm-icon{display:none}
+  .dm-hamburger{display:block}
+  .dm-hero-left{padding:40px 22px}
+  .dm-section{padding:40px 22px}
+  .dm-cats{grid-template-columns:1fr}
+  .dm-prods{grid-template-columns:repeat(2,1fr)}
+  .dm-stats{grid-template-columns:1fr 1fr}
+  .dm-cta{padding:40px 22px}
+  .dm-nl{padding:32px 22px}
+  .dm-nl-form{flex-direction:column;gap:10px}
+  .dm-nl-form input{border-right:1.5px solid var(--border);border-radius:10px}
+  .dm-nl-form button{border-radius:10px}
+  .dm-footer{padding:32px 22px 0}
+}
+</style>
+@include('partials.theme-manager')
+</head>
 <body>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <i class="fa-solid fa-truck-fast"></i> Livraison gratuite dès 49€
-  &nbsp;|&nbsp;
-  <i class="fa-solid fa-money-bill-wave"></i> Paiement en espèces à la livraison
-  &nbsp;|&nbsp;
-  <i class="fa-solid fa-shield-halved"></i> Achats sécurisés
-</div>
+@php
+  $catalogUrl = auth()->check() && auth()->user()->type_compte === 'client'
+    ? route('buyer.products.index')
+    : route('login');
+@endphp
 
-<!-- NAVBAR -->
-<nav class="navbar">
-  <div class="nav-logo">Nex<span>Shop</span></div>
+<!-- ═══ NAVBAR ═══ -->
+<nav class="dm-nav">
+  <div class="dm-logo">Nex<span>Shop</span></div>
 
-  <div class="search-wrap">
-    <input type="text" placeholder="Rechercher un produit, une marque…">
-    <button><i class="fa-solid fa-magnifying-glass"></i></button>
+  <div class="dm-links">
+    @foreach(($categories ?? collect())->take(4) as $cat)
+      <a href="#prods-grid" data-cat-trigger="{{ $cat->id }}">{{ $cat->nom }}</a>
+    @endforeach
+    <a href="#a-propos">À propos</a>
   </div>
 
-  <ul class="nav-cats">
-    <li><a href="#">Mode</a></li>
-    <li><a href="#">Électronique</a></li>
-    <li><a href="#">Gaming</a></li>
-    <li><a href="#">Sport</a></li>
-    <li><a href="#">Beauté</a></li>
-    <li><a href="#">Maison</a></li>
-  </ul>
+  <div class="dm-right">
+    <button type="button" class="dm-icon" data-theme-toggle aria-pressed="false" title="Changer le thème"><i class="fa-regular fa-moon"></i></button>
+    <button class="dm-icon"><i class="fa-solid fa-magnifying-glass"></i></button>
+    @auth
+      @if(auth()->user()->type_compte === 'client')
+        <a href="{{ route('buyer.favorites.index') }}" class="dm-icon"><i class="fa-regular fa-heart"></i></a>
+        <a href="{{ route('buyer.cart.index') }}" class="dm-icon"><i class="fa-solid fa-bag-shopping"></i><span class="dm-badge">{{ auth()->user()->panier()->count() }}</span></a>
+      @endif
+    @else
+      <a href="{{ route('login') }}" class="dm-icon"><i class="fa-regular fa-heart"></i></a>
+      <a href="{{ route('login') }}" class="dm-icon"><i class="fa-solid fa-bag-shopping"></i></a>
+    @endauth
 
-  <div class="nav-right">
-    <button class="icon-btn"><i class="fa-regular fa-heart"></i></button>
-    <button class="icon-btn">
-      <i class="fa-solid fa-bag-shopping"></i>
-      <span class="badge">3</span>
-    </button>
-    <a href="{{ route('login') }}" class="btn-login">Connexion</a>
-    <a href="{{ route('register') }}" class="btn-signup">S'inscrire</a>
+    @auth
+      @if(auth()->user()->type_compte === 'admin')
+        <a href="{{ route('admin.home') }}" class="dm-btn dm-btn--fill">Mon espace</a>
+      @elseif(auth()->user()->type_compte === 'vendeur')
+        <a href="{{ route('vendeur.home') }}" class="dm-btn dm-btn--fill">Mon espace</a>
+      @else
+        <a href="{{ route('buyer.home') }}" class="dm-btn dm-btn--fill">Mon espace</a>
+      @endif
+      <form action="{{ route('logout') }}" method="POST" style="display:inline">
+        @csrf
+        <button type="submit" class="dm-btn dm-btn--ghost" style="cursor:pointer">Déconnexion</button>
+      </form>
+    @else
+      <a href="{{ route('login') }}" class="dm-btn dm-btn--ghost">Connexion</a>
+      <a href="{{ route('register') }}" class="dm-btn dm-btn--fill">S'inscrire</a>
+    @endauth
   </div>
 
-  <button class="hamburger" onclick="toggleDrawer()"><i class="fa-solid fa-bars"></i></button>
+  <button class="dm-hamburger" onclick="toggleDrawer()"><i class="fa-solid fa-bars"></i></button>
 </nav>
 
-<!-- DRAWER -->
-<div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
-<div class="drawer" id="drawer">
-  <button class="drawer-close" onclick="toggleDrawer()"><i class="fa-solid fa-xmark"></i></button>
-  <div class="drawer-logo">Nex<span>Shop</span></div>
-  <ul class="drawer-links">
-    <li><a href="#"><i class="fa-solid fa-shirt"></i>Mode</a></li>
-    <li><a href="#"><i class="fa-solid fa-laptop"></i>Électronique</a></li>
-    <li><a href="#"><i class="fa-solid fa-couch"></i>Maison</a></li>
-    <li><a href="#"><i class="fa-solid fa-gamepad"></i>Gaming</a></li>
-    <li><a href="#"><i class="fa-solid fa-dumbbell"></i>Sport</a></li>
-    <li><a href="#"><i class="fa-regular fa-heart"></i>Favoris</a></li>
-    <li><a href="#"><i class="fa-solid fa-bag-shopping"></i>Panier</a></li>
-    <li><a href="#"><i class="fa-regular fa-user"></i>Compte</a></li>
-  </ul>
-  <div class="drawer-btns">
-    <a href="{{ route('login') }}" class="btn-signup" style="border-radius:10px;padding:13px;display:block;text-align:center">Connexion</a>
-    <a href="{{ route('register') }}" class="btn-login" style="border-radius:10px;padding:13px;display:block;text-align:center">S'inscrire</a>
-  </div>
-</div>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-left">
-    <div class="hero-tag"><i class="fa-solid fa-bolt"></i> Marketplace #1 en Djibouti</div>
-    <h1 class="hero-title">
-      Tout ce dont<br>tu as besoin,<br>
-      <span class="accent">livré</span> chez toi.
-    </h1>
-    <p class="hero-desc">
-      Des milliers de produits de vendeurs certifiés.
-      <strong>Paiement en espèces</strong> à la livraison — aucune carte requise.
-    </p>
-    <div class="hero-btns">
-      <button class="btn-primary">
-        <i class="fa-solid fa-arrow-right"></i> Acheter maintenant
-      </button>
-      <button class="btn-ghost">
-        <i class="fa-solid fa-store"></i> Devenir vendeur
-      </button>
-    </div>
-    <div class="hero-stats">
-      <div><div class="stat-num">12K+</div><div class="stat-label">Produits</div></div>
-      <div><div class="stat-num">1.2K</div><div class="stat-label">Vendeurs</div></div>
-      <div><div class="stat-num">4.9★</div><div class="stat-label">Note moyenne</div></div>
-    </div>
-  </div>
-
-  <div class="hero-right">
-    <img src="{{ asset('images\shops.png')}}" alt="Shopping">
-    <div class="hero-float">
-      <div class="float-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
-      <div>
-        <div class="float-title">Paiement en espèces</div>
-        <div class="float-sub">À la réception du colis</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<div class="features">
-  <div class="feat"><div class="feat-ico"><i class="fa-solid fa-truck-fast"></i></div><div><div class="feat-title">Livraison rapide</div><div class="feat-sub">Gratuite dès 49€</div></div></div>
-  <div class="feat"><div class="feat-ico"><i class="fa-solid fa-money-bill-wave"></i></div><div><div class="feat-title">Espèces uniquement</div><div class="feat-sub">Paiement à la réception</div></div></div>
-  <div class="feat"><div class="feat-ico"><i class="fa-solid fa-rotate-left"></i></div><div><div class="feat-title">Retours 30 jours</div><div class="feat-sub">Sans frais</div></div></div>
-  <div class="feat"><div class="feat-ico"><i class="fa-solid fa-headset"></i></div><div><div class="feat-title">Support 24/7</div><div class="feat-sub">Toujours là pour toi</div></div></div>
-</div>
-
-<!-- CATÉGORIES -->
-<section class="section reveal">
-  <div class="sec-head">
-    <div><div class="sec-tag">Collections</div><h2 class="sec-title">Explore les catégories</h2></div>
-    <a href="#" class="see-all">Tout voir <i class="fa-solid fa-arrow-right"></i></a>
-  </div>
-    <div class="cats-grid">
-    <div class="cat-card"><img src="{{ asset('images\vetement_0-3mois.png')}}" alt="Bébés"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-baby"></i></div><div class="cat-name">Bébés</div><div class="cat-count">1 240 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\nike-air-max-90.png')}}" alt="Sport"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-dumbbell"></i></div><div class="cat-name">Sport</div><div class="cat-count">2 180 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\housse_pour_voiture.png')}}" alt="Voitures"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-car"></i></div><div class="cat-name">Voitures</div><div class="cat-count">890 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\gaming.png')}}" alt="Gaming"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-gamepad"></i></div><div class="cat-name">Gaming</div><div class="cat-count">740 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\table_assi_debout.jpg')}}" alt="Bureau"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-graduation-cap"></i></div><div class="cat-name">Scolaires & Bureau</div><div class="cat-count">1 560 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\bracelet_bien_etre.png')}}" alt="Santé"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-heart-pulse"></i></div><div class="cat-name">Santé & Bien-être</div><div class="cat-count">980 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\canape2per.png')}}" alt="Maison"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-house"></i></div><div class="cat-name">Maison</div><div class="cat-count">3 150 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\macbook14.png')}}" alt="Électronique"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-microchip"></i></div><div class="cat-name">Électronique</div><div class="cat-count">1 620 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\mode.png')}}" alt="Montres"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-clock"></i></div><div class="cat-name">Montres & Accessoires</div><div class="cat-count">670 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\beaute.png')}}" alt="Beauté"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-spa"></i></div><div class="cat-name">Beauté</div><div class="cat-count">2 340 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\vetement&mode.png')}}" alt="Mode"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-shirt"></i></div><div class="cat-name">Vêtements & Mode</div><div class="cat-count">2 840 produits</div></div></div>
-    <div class="cat-card"><img src="{{ asset('images\telephone.png')}}" alt="Téléphones"><div class="cat-info"><div class="cat-ico"><i class="fa-solid fa-mobile-screen"></i></div><div class="cat-name">Téléphones</div><div class="cat-count">1 120 produits</div></div></div>
-  </div>
-</section>
-
-<!-- PRODUITS -->
-<section class="section reveal" style="padding-top:0">
-  <div class="sec-head">
-    <div><div class="sec-tag">Tendances</div><h2 class="sec-title">Produits populaires</h2></div>
-    <a href="#" class="see-all">Tout voir <i class="fa-solid fa-arrow-right"></i></a>
-  </div>
-    <div class="cat-filters">
-    <button class="cf-btn active" onclick="filterCat(this,'all')">Tous</button>
-    <button class="cf-btn" onclick="filterCat(this,'Bébés')">👶 Bébés</button>
-    <button class="cf-btn" onclick="filterCat(this,'Sport')">🏋️ Sport</button>
-    <button class="cf-btn" onclick="filterCat(this,'Voitures')">🚗 Voitures</button>
-    <button class="cf-btn" onclick="filterCat(this,'Gaming')">🎮 Gaming</button>
-    <button class="cf-btn" onclick="filterCat(this,'Scolaires & Bureau')">📚 Bureau</button>
-    <button class="cf-btn" onclick="filterCat(this,'Santé & Bien-être')">💊 Santé</button>
-    <button class="cf-btn" onclick="filterCat(this,'Maison')">🏠 Maison</button>
-    <button class="cf-btn" onclick="filterCat(this,'Électronique')">💻 Électronique</button>
-    <button class="cf-btn" onclick="filterCat(this,'Montres & Accessoires')">⌚ Montres</button>
-    <button class="cf-btn" onclick="filterCat(this,'Beauté')">💄 Beauté</button>
-    <button class="cf-btn" onclick="filterCat(this,'Vêtements & Mode')">👗 Mode</button>
-    <button class="cf-btn" onclick="filterCat(this,'Téléphones')">📱 Téléphones</button>
-  </div>
-    <div class="prods-grid" id="prods-grid">
-
-    <!-- ══ BÉBÉS ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\boussette_a_4roues.png')}}" alt="Poussette"><span class="prod-badge">-20%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Bébés</div><div class="prod-name">Poussette 4 Roues Confort</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(94)</span></div><div class="prod-foot"><div><span class="prod-price">249€</span><span class="prod-old">319€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\lit_a_barreaux.png')}}" alt="Lit bébé"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Bébés</div><div class="prod-name">Lit à Barreaux Évolutif</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(61)</span></div><div class="prod-foot"><span class="prod-price">189€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\tapis_evil_mus.png')}}" alt="Jouets"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Bébés</div><div class="prod-name">Tapis d'Éveil Musical</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(113)</span></div><div class="prod-foot"><span class="prod-price">45€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\vetement_0-3mois.png')}}" alt="Vêtements bébé"><span class="prod-badge">-30%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Bébés</div><div class="prod-name">Pack Vêtements 0-3 Mois</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(77)</span></div><div class="prod-foot"><div><span class="prod-price">35€</span><span class="prod-old">50€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ SPORT ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\velo.png')}}" alt="Vélo"><span class="prod-badge">-15%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Sport</div><div class="prod-name">Vélo de Route Carbon 21V</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(142)</span></div><div class="prod-foot"><div><span class="prod-price">599€</span><span class="prod-old">699€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\haltere-reglable-40-kg.png')}}" alt="Haltères"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Sport</div><div class="prod-name">Set Haltères Réglables 40kg</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(205)</span></div><div class="prod-foot"><span class="prod-price">129€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\nike-air-max2026.png')}}" alt="Chaussures sport"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Sport</div><div class="prod-name">Nike Air Max 2026</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(387)</span></div><div class="prod-foot"><span class="prod-price">149€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\tapis_yoga.webp')}}" alt="Tapis yoga"><span class="prod-badge">-25%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Sport</div><div class="prod-name">Tapis Yoga Antidérapant</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(156)</span></div><div class="prod-foot"><div><span class="prod-price">39€</span><span class="prod-old">52€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ VOITURES ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\Auto-siege-bebe.png')}}" alt="Siège auto"><span class="prod-badge">-10%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Voitures</div><div class="prod-name">Siège Auto Bébé Groupe 0+</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(88)</span></div><div class="prod-foot"><div><span class="prod-price">179€</span><span class="prod-old">199€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\dashcam_cam1.png')}}" alt="Dashcam"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Voitures</div><div class="prod-name">Dashcam 4K WiFi GPS</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(223)</span></div><div class="prod-foot"><span class="prod-price">89€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\housse_pour_voiture.png')}}" alt="Housse voiture"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Voitures</div><div class="prod-name">Housse Protection Voiture</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(67)</span></div><div class="prod-foot"><span class="prod-price">49€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\tomtom.png')}}" alt="GPS"><span class="prod-badge">-20%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Voitures</div><div class="prod-name">GPS Tomtom Go 620</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(134)</span></div><div class="prod-foot"><div><span class="prod-price">119€</span><span class="prod-old">149€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ GAMING ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\gaming.png')}}" alt="PS5"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Gaming</div><div class="prod-name">PlayStation 5 Slim</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(521)</span></div><div class="prod-foot"><span class="prod-price">549€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\clavier gaming.png')}}" alt="Clavier"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Gaming</div><div class="prod-name">Clavier Mécanique RGB</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(203)</span></div><div class="prod-foot"><span class="prod-price">129€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\chaise gaming.png')}}" alt="Chaise gaming"><span class="prod-badge">-18%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Gaming</div><div class="prod-name">Chaise Gaming Pro Ergonomique</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(312)</span></div><div class="prod-foot"><div><span class="prod-price">299€</span><span class="prod-old">365€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\Gaming audio.png')}}" alt="Casque gaming"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Gaming</div><div class="prod-name">Casque Gaming 7.1 Surround</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(189)</span></div><div class="prod-foot"><span class="prod-price">89€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ SCOLAIRES & BUREAU ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\sac ecole.png')}}" alt="Sac école"><span class="prod-badge">-22%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Scolaires & Bureau</div><div class="prod-name">Cartable Ergonomique 18L</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(145)</span></div><div class="prod-foot"><div><span class="prod-price">55€</span><span class="prod-old">70€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\bureau.png')}}" alt="Bureau"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Scolaires & Bureau</div><div class="prod-name">Bureau Réglable Debout/Assis</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(98)</span></div><div class="prod-foot"><span class="prod-price">349€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\imprimante_laser.png')}}" alt="Imprimante"><span class="prod-badge">-15%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Scolaires & Bureau</div><div class="prod-name">Imprimante Laser Wi-Fi</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(167)</span></div><div class="prod-foot"><div><span class="prod-price">129€</span><span class="prod-old">152€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\Set Stylos Premium 12 pcs.png')}}" alt="Stylo"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Scolaires & Bureau</div><div class="prod-name">Set Stylos Premium 12 pcs</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(234)</span></div><div class="prod-foot"><span class="prod-price">19€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ SANTÉ & BIEN-ÊTRE ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\bracelet_bien_etre.png')}}" alt="Smartwatch santé"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Santé & Bien-être</div><div class="prod-name">Bracelet Santé Connecté</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(289)</span></div><div class="prod-foot"><span class="prod-price">79€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\huille_essentielle.png')}}" alt="Huiles"><span class="prod-badge">-20%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Santé & Bien-être</div><div class="prod-name">Huiles Essentielles Bio 10 pcs</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(178)</span></div><div class="prod-foot"><div><span class="prod-price">29€</span><span class="prod-old">36€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\tapis_yoga.webp')}}" alt="Yoga"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Santé & Bien-être</div><div class="prod-name">Diffuseur Arômes Ultrasonique</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(412)</span></div><div class="prod-foot"><span class="prod-price">45€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\Balance Connectée IMC.png')}}" alt="Balance"><span class="prod-badge">-30%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Santé & Bien-être</div><div class="prod-name">Balance Connectée IMC</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(123)</span></div><div class="prod-foot"><div><span class="prod-price">35€</span><span class="prod-old">50€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ MAISON ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\canape2per.png')}}" alt="Canapé"><span class="prod-badge">-25%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Maison</div><div class="prod-name">Canapé Convertible 2 Places</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(156)</span></div><div class="prod-foot"><div><span class="prod-price">499€</span><span class="prod-old">665€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\aspirateur.png')}}" alt="Robot aspirateur"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Maison</div><div class="prod-name">Robot Aspirateur Wi-Fi</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(341)</span></div><div class="prod-foot"><span class="prod-price">299€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\robot_cuissiner.png')}}" alt="Cuisine"><span class="prod-badge">-18%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Maison</div><div class="prod-name">Robot Cuiseur Multifonction</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(267)</span></div><div class="prod-foot"><div><span class="prod-price">219€</span><span class="prod-old">267€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\Lampe LED Ambiance Smart.png')}}" alt="Lampe"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Maison</div><div class="prod-name">Lampe LED Ambiance Smart</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(198)</span></div><div class="prod-foot"><span class="prod-price">59€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ ÉLECTRONIQUE ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\iMac 24 M3 Argent.png')}}" alt="iMac"><span class="prod-badge">-20%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Électronique</div><div class="prod-name">iMac 24" M3 Argent</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(128)</span></div><div class="prod-foot"><div><span class="prod-price">1 199€</span><span class="prod-old">1 499€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\tv-smart.png')}}" alt="TV"><span class="prod-badge">-25%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Électronique</div><div class="prod-name">TV Samsung QLED 55"</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(178)</span></div><div class="prod-foot"><div><span class="prod-price">749€</span><span class="prod-old">999€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\audio.png')}}" alt="Casque"><span class="prod-badge">-35%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Électronique</div><div class="prod-name">Casque Sony WH-1000XM5</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(312)</span></div><div class="prod-foot"><div><span class="prod-price">199€</span><span class="prod-old">309€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\macbook14.png')}}" alt="Laptop"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Électronique</div><div class="prod-name">MacBook Pro 14" M3 Max</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(445)</span></div><div class="prod-foot"><span class="prod-price">2 199€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ MONTRES & ACCESSOIRES ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\mode.png')}}" alt="Montre"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Montres & Accessoires</div><div class="prod-name">Montre Automatique Acier</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(84)</span></div><div class="prod-foot"><span class="prod-price">289€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\Apple Watch Series 10.png')}}" alt="Apple Watch"><span class="prod-badge">-12%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Montres & Accessoires</div><div class="prod-name">Apple Watch Series 10</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(631)</span></div><div class="prod-foot"><div><span class="prod-price">439€</span><span class="prod-old">499€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\Ceinture Cuir Véritable.png')}}" alt="Ceinture"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Montres & Accessoires</div><div class="prod-name">Ceinture Cuir Véritable</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(92)</span></div><div class="prod-foot"><span class="prod-price">49€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\sacs bussines.png')}}" alt="Sac"><span class="prod-badge">-15%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Montres & Accessoires</div><div class="prod-name">Sac à Dos Business 30L</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(187)</span></div><div class="prod-foot"><div><span class="prod-price">79€</span><span class="prod-old">93€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ BEAUTÉ ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\maquillage.png')}}" alt="Maquillage"><span class="prod-badge">-30%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Beauté</div><div class="prod-name">Palette Maquillage 24 Teintes</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(356)</span></div><div class="prod-foot"><div><span class="prod-price">35€</span><span class="prod-old">50€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\vitamine c.png')}}" alt="Soin visage"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Beauté</div><div class="prod-name">Sérum Anti-Âge Vitamine C</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(278)</span></div><div class="prod-foot"><span class="prod-price">39€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('')}}" alt="Parfum"><span class="prod-badge">-20%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Beauté</div><div class="prod-name">Eau de Parfum 100ml</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(445)</span></div><div class="prod-foot"><div><span class="prod-price">69€</span><span class="prod-old">86€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\lisseur cheveux.png')}}" alt="Lisseur"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Beauté</div><div class="prod-name">Lisseur Cheveux Céramique</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(192)</span></div><div class="prod-foot"><span class="prod-price">55€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ VÊTEMENTS & MODE ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('')}}" alt="Veste"><span class="prod-badge">-40%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Vêtements & Mode</div><div class="prod-name">Veste Cuir Homme Premium</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(234)</span></div><div class="prod-foot"><div><span class="prod-price">149€</span><span class="prod-old">249€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\robe.webp')}}" alt="Robe"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Vêtements & Mode</div><div class="prod-name">Robe Été Florale</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(178)</span></div><div class="prod-foot"><span class="prod-price">45€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\gean1.png')}}" alt="Jean"><span class="prod-badge">-25%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Vêtements & Mode</div><div class="prod-name">Jean Slim Stretch Homme</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(312)</span></div><div class="prod-foot"><div><span class="prod-price">49€</span><span class="prod-old">65€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\lunette_soleil.png')}}" alt="Lunettes"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Vêtements & Mode</div><div class="prod-name">Lunettes Soleil Polarisées</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(156)</span></div><div class="prod-foot"><span class="prod-price">29€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-    <!-- ══ TÉLÉPHONES ══ -->
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\telephone.png')}}" alt="iPhone"><span class="prod-badge new">Nouveau</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Téléphones</div><div class="prod-name">iPhone 16 Pro Max 256Go</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(892)</span></div><div class="prod-foot"><span class="prod-price">1 329€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\samsung galaxy s25.png')}}" alt="Samsung"><span class="prod-badge">-18%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Téléphones</div><div class="prod-name">Samsung Galaxy S25 Ultra</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(567)</span></div><div class="prod-foot"><div><span class="prod-price">999€</span><span class="prod-old">1 219€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\telephone coque.png')}}" alt="Coque"><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Téléphones</div><div class="prod-name">Coque Protection MagSafe</div><div class="prod-rating"><span class="stars">★★★★☆</span><span class="reviews">(234)</span></div><div class="prod-foot"><span class="prod-price">25€</span><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-    <div class="prod-card"><div class="prod-img"><img src="{{ asset('images\chargeurs-sans-fil-pour-telephones-mobiles.png')}}" alt="Chargeur"><span class="prod-badge">-35%</span><div class="prod-actions"><button class="act-btn" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button><button class="act-btn"><i class="fa-regular fa-eye"></i></button></div></div><div class="prod-body"><div class="prod-cat">Téléphones</div><div class="prod-name">Chargeur Sans Fil 45W</div><div class="prod-rating"><span class="stars">★★★★★</span><span class="reviews">(445)</span></div><div class="prod-foot"><div><span class="prod-price">29€</span><span class="prod-old">45€</span></div><button class="add-btn" onclick="addCart(this)"><i class="fa-solid fa-plus"></i></button></div></div></div>
-
-  </div>
-</section>
-
-<!-- PROMO -->
-<div class="promo-wrap reveal">
-  <div class="promo-bg"></div>
-  <div class="promo-glow"></div>
-  <div class="promo-content">
-    <div class="promo-tag"><i class="fa-solid fa-bolt"></i> Vente flash</div>
-    <h2 class="promo-title">Jusqu'à <span>-50%</span><br>sur l'électronique</h2>
-    <p class="promo-desc">Offre limitée — paiement en espèces à la livraison. Aucune carte requise.</p>
-    <div class="countdown">
-      <div class="cd-block"><div class="cd-num" id="cd-h">08</div><div class="cd-label">Heures</div></div>
-      <div class="cd-block"><div class="cd-num" id="cd-m">24</div><div class="cd-label">Minutes</div></div>
-      <div class="cd-block"><div class="cd-num" id="cd-s">00</div><div class="cd-label">Secondes</div></div>
-    </div>
-    <button class="btn-primary">Voir les offres <i class="fa-solid fa-arrow-right"></i></button>
-  </div>
-</div>
-
-<!-- AVIS -->
-<section class="section reveal">
-  <div class="sec-head">
-    <div><div class="sec-tag">Témoignages</div><h2 class="sec-title">Ils nous font confiance</h2></div>
-  </div>
-  <div class="reviews-grid">
-    <div class="rev-card"><div class="rev-q">"</div><div class="rev-stars">★★★★★</div><p class="rev-text">Expérience d'achat au top. La livraison était ultra rapide et le paiement en espèces super pratique. Je recommande à 100%.</p><div class="rev-author"><img class="rev-avatar" src="images\salma.png" alt="Sophie"><div><div class="rev-name">Salma Aden</div><div class="rev-loc">Ali-sabieh, Djibouti</div></div></div></div>
-    <div class="rev-card"><div class="rev-q">"</div><div class="rev-stars">★★★★★</div><p class="rev-text">Des produits de qualité à des prix imbattables. Le vendeur était très pro et le suivi de commande parfait.</p><div class="rev-author"><img class="rev-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Lucas"><div><div class="rev-name">Lucas Bernard</div><div class="rev-loc">Djibouti-ville, Djibouti</div></div></div></div>
-    <div class="rev-card"><div class="rev-q">"</div><div class="rev-stars">★★★★★</div><p class="rev-text">J'utilise NexShop depuis 6 mois pour ma boutique. Mes ventes ont explosé de 40%. Les outils vendeur sont excellents.</p><div class="rev-author"><img class="rev-avatar" src="images\soumeya.png" alt="soumeya"><div><div class="rev-name">soumeya Bachir</div><div class="rev-loc">Djibouti-ville, Djibouti</div></div></div></div>
-  </div>
-</section>
-
-<!-- NEWSLETTER -->
-
-<!-- ══ BOUTIQUES PARTENAIRES ══ -->
-<section class="section reveal" style="padding-top:0">
-  <div class="sec-head">
-    <div><div class="sec-tag">Vendeurs certifiés</div><h2 class="sec-title">Boutiques à la une</h2></div>
-    <a href="#" class="see-all">Voir toutes <i class="fa-solid fa-arrow-right"></i></a>
-  </div>
-  <div class="shops-grid">
-
-    <div class="shop-card">
-      <div class="shop-banner"><img src="images/boutique electronique.png" alt="TechZone"></div>
-      <div class="shop-body">
-        <div class="shop-avatar"><img src="images/boutique electronique.png" alt="TechZone"></div>
-        <div class="shop-info">
-          <div class="shop-name">TechZone Pro <i class="fa-solid fa-circle-check"></i></div>
-          <div class="shop-cat">Électronique & Gadgets</div>
-          <div class="shop-stats">
-            <span><i class="fa-solid fa-star"></i> 4.9</span>
-            <span><i class="fa-solid fa-box"></i> 1 240 produits</span>
-            <span><i class="fa-solid fa-users"></i> 8.2K abonnés</span>
-          </div>
-          <p class="shop-desc">Spécialiste en électronique haut de gamme. Livraison express, garantie 2 ans sur tous les produits.</p>
-          <div class="shop-tags"><span class="stag">iPhone</span><span class="stag">MacBook</span><span class="stag">Samsung</span></div>
-        </div>
-        <a href="#" class="btn-shop">Visiter la boutique <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-    </div>
-
-    <div class="shop-card">
-      <div class="shop-banner"><img src="images\boutiquevetement.png" alt="ModaStyle"></div>
-      <div class="shop-body">
-        <div class="shop-avatar"><img src="images\boutiquevetement.png" alt="ModaStyle"></div>
-        <div class="shop-info">
-          <div class="shop-name">ModaStyle <i class="fa-solid fa-circle-check"></i></div>
-          <div class="shop-cat">Vêtements & Mode</div>
-          <div class="shop-stats">
-            <span><i class="fa-solid fa-star"></i> 4.8</span>
-            <span><i class="fa-solid fa-box"></i> 2 840 produits</span>
-            <span><i class="fa-solid fa-users"></i> 15K abonnés</span>
-          </div>
-          <p class="shop-desc">Tendances mode pour femmes et hommes. Collections mises à jour chaque semaine, retours gratuits.</p>
-          <div class="shop-tags"><span class="stag">Robes</span><span class="stag">Vestes</span><span class="stag">Accessoires</span></div>
-        </div>
-        <a href="#" class="btn-shop">Visiter la boutique <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-    </div>
-
-    <div class="shop-card">
-      <div class="shop-banner"><img src="images\boutique beauté.png" alt="BeautyHub"></div>
-      <div class="shop-body">
-        <div class="shop-avatar"><img src="images\boutique beauté.png" alt="BeautyHub"></div>
-        <div class="shop-info">
-          <div class="shop-name">BeautyHub <i class="fa-solid fa-circle-check"></i></div>
-          <div class="shop-cat">Beauté & Bien-être</div>
-          <div class="shop-stats">
-            <span><i class="fa-solid fa-star"></i> 4.7</span>
-            <span><i class="fa-solid fa-box"></i> 980 produits</span>
-            <span><i class="fa-solid fa-users"></i> 6.5K abonnés</span>
-          </div>
-          <p class="shop-desc">Produits de beauté naturels et bio. Certifiés cruelty-free, 100% testés par nos expertes beauté.</p>
-          <div class="shop-tags"><span class="stag">Bio</span><span class="stag">Skincare</span><span class="stag">Parfums</span></div>
-        </div>
-        <a href="#" class="btn-shop">Visiter la boutique <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-    </div>
-
-    <div class="shop-card">
-      <div class="shop-banner"><img src="images\boutique gaming.png" alt="GamersWorld"></div>
-      <div class="shop-body">
-        <div class="shop-avatar"><img src="images\boutique gaming.png" alt="GamersWorld"></div>
-        <div class="shop-info">
-          <div class="shop-name">GamersWorld <i class="fa-solid fa-circle-check"></i></div>
-          <div class="shop-cat">Gaming & High-Tech</div>
-          <div class="shop-stats">
-            <span><i class="fa-solid fa-star"></i> 4.9</span>
-            <span><i class="fa-solid fa-box"></i> 740 produits</span>
-            <span><i class="fa-solid fa-users"></i> 12K abonnés</span>
-          </div>
-          <p class="shop-desc">Tout pour les gamers : consoles, périphériques, jeux. Prix imbattables et stock toujours disponible.</p>
-          <div class="shop-tags"><span class="stag">PS5</span><span class="stag">Xbox</span><span class="stag">PC Gaming</span></div>
-        </div>
-        <a href="#" class="btn-shop">Visiter la boutique <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- CTA Vendeur -->
-  <div class="seller-cta reveal">
-    <div class="seller-cta-left">
-      <div class="sec-tag">Rejoins-nous</div>
-      <h3 class="seller-cta-title">Tu as une boutique ?<br><span>Vends sur NexShop</span></h3>
-      <p class="seller-cta-desc">Rejoins plus de 1 200 vendeurs certifiés. Crée ta boutique gratuitement et commence à vendre dès aujourd'hui.</p>
-      <div class="seller-perks">
-        <div class="perk"><i class="fa-solid fa-check"></i> Inscription 100% gratuite</div>
-        <div class="perk"><i class="fa-solid fa-check"></i> Tableau de bord vendeur complet</div>
-        <div class="perk"><i class="fa-solid fa-check"></i> Paiement espèces garanti</div>
-        <div class="perk"><i class="fa-solid fa-check"></i> Support dédié 7j/7</div>
-      </div>
-      <button class="btn-primary" style="margin-top:28px"><i class="fa-solid fa-store"></i> Créer ma boutique</button>
-    </div>
-    <div class="seller-cta-right">
-      <div class="seller-stat-grid">
-        <div class="seller-stat"><div class="ss-num">1 200+</div><div class="ss-label">Vendeurs actifs</div></div>
-        <div class="seller-stat"><div class="ss-num">48K+</div><div class="ss-label">Clients satisfaits</div></div>
-        <div class="seller-stat"><div class="ss-num">12K+</div><div class="ss-label">Produits listés</div></div>
-        <div class="seller-stat"><div class="ss-num">4.9★</div><div class="ss-label">Note moyenne</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- ══ CONTACT ══ -->
-<section class="section reveal" id="contact">
-
-  <div class="contact-bg">
-    <img src="{{ asset('images/contact.jpg') }}" alt="">
-  </div>
-
-  <div class="sec-head" style="position:relative;z-index:2">
-    <div>
-      <div class="sec-tag">Nous contacter</div>
-      <h2 class="sec-title">Une question ? On répond</h2>
-    </div>
-  </div>
-
-  <div class="contact-grid">
-
-    <div class="contact-infos">
-      <div class="contact-item">
-        <div class="contact-ico"><i class="fa-solid fa-location-dot"></i></div>
-        <div>
-          <div class="contact-item-title">Adresse</div>
-          <div class="contact-item-val">Djibouti, République de Djibouti</div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-ico"><i class="fa-solid fa-phone"></i></div>
-        <div>
-          <div class="contact-item-title">Téléphone</div>
-          <div class="contact-item-val">+253 77 00 00 00</div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-ico"><i class="fa-solid fa-envelope"></i></div>
-        <div>
-          <div class="contact-item-title">Email</div>
-          <div class="contact-item-val">contact@nexshop.dj</div>
-        </div>
-      </div>
-      <div class="contact-item">
-        <div class="contact-ico"><i class="fa-solid fa-clock"></i></div>
-        <div>
-          <div class="contact-item-title">Horaires</div>
-          <div class="contact-item-val">Lun–Sam : 8h – 17h</div>
-        </div>
-      </div>
-      <div class="contact-socials">
-        <a href="#" class="csoc"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#" class="csoc"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="#" class="csoc"><i class="fa-brands fa-x-twitter"></i></a>
-        <a href="#" class="csoc"><i class="fa-brands fa-tiktok"></i></a>
-      </div>
-    </div>
-
-    <div class="contact-form-wrap">
-      <form class="contact-form" onsubmit="submitContact(event)">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Prénom & Nom</label>
-            <input type="text" placeholder="Soumeya Bachir" required>
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" placeholder="soumeyabachir123@gmail.com" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Sujet</label>
-          <select>
-            <option value="">Choisir un sujet…</option>
-            <option>Question sur une commande</option>
-            <option>Problème de livraison</option>
-            <option>Devenir vendeur</option>
-            <option>Signaler un problème</option>
-            <option>Autre</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Message</label>
-          <textarea placeholder="Décris ta demande en détail…" rows="5" required></textarea>
-        </div>
-        <button type="submit" class="btn-primary" style="width:100%;justify-content:center">
-          <i class="fa-solid fa-paper-plane"></i> Envoyer le message
-        </button>
+<!-- ═══ DRAWER MOBILE ═══ -->
+<div class="dm-overlay" id="overlay" onclick="toggleDrawer()"></div>
+<div class="dm-drawer" id="drawer">
+  <button class="dm-drawer-close" onclick="toggleDrawer()"><i class="fa-solid fa-xmark"></i></button>
+  <div class="dm-drawer-logo">Nex<span>Shop</span></div>
+  <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" style="width:100%;justify-content:center;margin-bottom:18px"><i class="fa-regular fa-moon" aria-hidden="true"></i><span class="theme-toggle-label">Thème</span></button>
+  @foreach(($categories ?? collect()) as $cat)
+    <a href="#prods-grid" class="dl" data-cat-trigger="{{ $cat->id }}"><i class="{{ $cat->icone ?: 'fa-solid fa-tag' }}"></i>{{ $cat->nom }}</a>
+  @endforeach
+  @auth
+    @if(auth()->user()->type_compte === 'client')
+      <a href="{{ route('buyer.favorites.index') }}" class="dl"><i class="fa-regular fa-heart"></i>Favoris</a>
+      <a href="{{ route('buyer.cart.index') }}" class="dl"><i class="fa-solid fa-bag-shopping"></i>Panier</a>
+    @endif
+  @endauth
+  <div class="dm-drawer-btns">
+    @auth
+      @if(auth()->user()->type_compte === 'admin')
+        <a href="{{ route('admin.home') }}" class="dm-btn dm-btn--fill" style="display:block;text-align:center;padding:13px">Mon espace</a>
+      @elseif(auth()->user()->type_compte === 'vendeur')
+        <a href="{{ route('vendeur.home') }}" class="dm-btn dm-btn--fill" style="display:block;text-align:center;padding:13px">Mon espace</a>
+      @else
+        <a href="{{ route('buyer.home') }}" class="dm-btn dm-btn--fill" style="display:block;text-align:center;padding:13px">Mon espace</a>
+      @endif
+      <form action="{{ route('logout') }}" method="POST">
+        @csrf
+        <button type="submit" class="dm-btn dm-btn--ghost" style="width:100%;display:block;text-align:center;padding:13px;cursor:pointer">Déconnexion</button>
       </form>
-    </div>
-
-  </div>
-</section>
-<div class="newsletter reveal">
-  <h2 class="nl-title">Ne rate aucune <span>offre exclusive</span></h2>
-  <p class="nl-sub">Inscris-toi et reçois nos meilleures promotions en avant-première.</p>
-  <div class="nl-form">
-    <input type="email" placeholder="Ton adresse email…">
-    <button><i class="fa-solid fa-paper-plane"></i> S'inscrire</button>
+    @else
+      <a href="{{ route('login') }}" class="dm-btn dm-btn--fill" style="display:block;text-align:center;padding:13px">Connexion</a>
+      <a href="{{ route('register') }}" class="dm-btn dm-btn--ghost" style="display:block;text-align:center;padding:13px">S'inscrire</a>
+    @endauth
   </div>
 </div>
-<!-- ══ DESTINATIONS DJIBOUTI ══ -->
-<section class="dj-section reveal">
-  <div class="sec-head">
-    <div>
-      <div class="sec-tag"><i class="fa-solid fa-location-dot"></i> Découvrir Djibouti</div>
-      <h2 class="sec-title">Les lieux incontournables</h2>
-      <p class="sec-sub">Explorez les merveilles naturelles de Djibouti</p>
+
+<!-- ═══ HERO ═══ -->
+<section class="dm-hero">
+  <div class="dm-hero-left">
+    <div class="dm-hero-tag">Nouvelle collection 2026</div>
+    <h1 class="dm-hero-title">L'authenticité<br>djiboutienne<br><em>redéfinie</em></h1>
+    <p class="dm-hero-sub">Produits locaux, vendeurs vérifiés et mode contemporaine.</p>
+    <div class="dm-hero-bullet">Livraison partout à Djibouti.</div>
+    <div class="dm-hero-btns">
+      <a href="{{ $catalogUrl }}" class="btn-p">Découvrir la boutique</a>
+      @if(auth()->check() && auth()->user()->type_compte === 'vendeur')
+        <a href="{{ route('vendeur.home') }}" class="btn-g">Mon espace vendeur</a>
+      @else
+        <a href="{{ route('vendeur.inscription.index') }}" class="btn-g">Voir les vendeurs</a>
+      @endif
     </div>
   </div>
-
-  <div class="dj-grid">
-
-    <div class="dj-card dj-card--large">
-      <div class="dj-img-wrap">
-        <img src="{{ asset('images/vacance.png') }}" alt="Plage de Djibouti">
-        <div class="dj-overlay"></div>
-      </div>
-      <div class="dj-content">
-        <div class="dj-tag"><i class="fa-solid fa-umbrella-beach"></i> Plage</div>
-        <h3 class="dj-title">Plages Paradisiaques</h3>
-        <p class="dj-desc">Détendez-vous sur les plus belles plages de sable blanc baignées par les eaux turquoise du Golfe d'Aden.</p>
-        <div class="dj-meta">
-          <span><i class="fa-solid fa-star"></i> 4.9</span>
-          <span><i class="fa-solid fa-users"></i> 2.4K visites</span>
-        </div>
-        <button class="dj-btn">Découvrir <i class="fa-solid fa-arrow-right"></i></button>
-      </div>
+  <div class="dm-hero-right">
+    <img src="{{ asset('images/shops.png') }}" alt="NexShop">
+    <div class="dm-float-top">
+      <div class="fn">Nouveau</div>
+      <div class="fl">Vendeurs partenaires</div>
     </div>
-
-    <div class="dj-card">
-      <div class="dj-img-wrap">
-        <img src="{{ asset('images/ile moucha.png') }}" alt="Île Moucha">
-        <div class="dj-overlay"></div>
+    <div class="dm-float-mid">Photo produit vedette</div>
+    <div class="dm-float-bot">
+      <div>
+        <div class="fn">100%</div>
+        <div class="fl">Produits locaux</div>
       </div>
-      <div class="dj-content">
-        <div class="dj-tag"><i class="fa-solid fa-water"></i> Île</div>
-        <h3 class="dj-title">Île Moucha</h3>
-        <p class="dj-desc">Un archipel corallien aux eaux cristallines, paradis des plongeurs et snorkelers.</p>
-        <div class="dj-meta">
-          <span><i class="fa-solid fa-star"></i> 4.8</span>
-          <span><i class="fa-solid fa-users"></i> 1.8K visites</span>
-        </div>
-        <button class="dj-btn">Découvrir <i class="fa-solid fa-arrow-right"></i></button>
-      </div>
-    </div>
-
-    <div class="dj-card">
-      <div class="dj-img-wrap">
-        <img src="{{ asset('images/sable blanche.png') }}" alt="Sables Blancs">
-        <div class="dj-overlay"></div>
-      </div>
-      <div class="dj-content">
-        <div class="dj-tag"><i class="fa-solid fa-sun"></i> Nature</div>
-        <h3 class="dj-title">Sables Blancs</h3>
-        <p class="dj-desc">Des paysages sauvages et authentiques entre mer turquoise et falaises rocheuses.</p>
-        <div class="dj-meta">
-          <span><i class="fa-solid fa-star"></i> 4.7</span>
-          <span><i class="fa-solid fa-users"></i> 1.2K visites</span>
-        </div>
-        <button class="dj-btn">Découvrir <i class="fa-solid fa-arrow-right"></i></button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BANDEAU ANIMÉ -->
-  <div class="dj-ticker-wrap">
-    <div class="dj-ticker">
-      <span>🌊 Île Moucha</span><span>•</span>
-      <span>🏖️ Plage du Lagon Bleu</span><span>•</span>
-      <span>🦈 Plongée avec les requins baleines</span><span>•</span>
-      <span>🌋 Lac Assal</span><span>•</span>
-      <span>🦒 Forêt du Day</span><span>•</span>
-      <span>🐬 Golfe de Tadjourah</span><span>•</span>
-      <span>🌊 Île Moucha</span><span>•</span>
-      <span>🦈 Plongée avec les requins baleines</span><span>•</span>
-      <span>🌋 Lac Assal</span><span>•</span>
-      <span>🦒 Forêt du Day</span><span>•</span>
-      <span>🐬 Golfe de Tadjourah</span>
+      <div class="dot"></div>
     </div>
   </div>
-
 </section>
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-grid">
-    <div>
-      <div class="f-logo">Nex<span>Shop</span></div>
-      <p class="f-desc">La marketplace qui connecte acheteurs et vendeurs partout en France. Paiement en espèces, livraison rapide.</p>
-      <div class="f-socials">
-        <button class="soc-btn"><i class="fa-brands fa-instagram"></i></button>
-        <button class="soc-btn"><i class="fa-brands fa-facebook-f"></i></button>
-        <button class="soc-btn"><i class="fa-brands fa-x-twitter"></i></button>
-        <button class="soc-btn"><i class="fa-brands fa-tiktok"></i></button>
+
+<!-- ═══ STATS BAR ═══ -->
+<div class="dm-stats reveal">
+  <div class="dm-stat"><div class="sn">100%</div><div class="sl">Local</div></div>
+  <div class="dm-stat"><div class="sn">Gratuit</div><div class="sl">Inscription</div></div>
+  <div class="dm-stat"><div class="sn">24h</div><div class="sl">Livraison</div></div>
+  <div class="dm-stat"><div class="sn">5 jours</div><div class="sl">Retour garanti</div></div>
+</div>
+
+<!-- ═══ TRUST TICKER ═══ -->
+<div class="dm-trust">
+  <div class="dm-trust-track">
+    <span><i class="fa-solid fa-gem"></i> Chat djiboutien authentique</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-wallet"></i> En espéces</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-rotate-left"></i> Retours sous 5 jours</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-shield-halved"></i> Vendeurs locaux certifiés</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-truck-fast"></i> Livraison gratuite dès 10 000 Fdj</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-gem"></i> Chat djiboutien authentique</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-wallet"></i> En espéces</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-rotate-left"></i> Retours sous 5 jours</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-shield-halved"></i> Vendeurs locaux certifiés</span><span class="dot">•</span>
+    <span><i class="fa-solid fa-truck-fast"></i> Livraison gratuite dès 10 000 Fdj</span>
+  </div>
+</div>
+
+<!-- ═══ EXPLORER LES UNIVERS ═══ -->
+<section class="dm-section reveal" style="background:#1e1b14">
+  <div class="dm-sec-head">
+    <h2 class="dm-sec-title">Explorer les univers</h2>
+    <a href="{{ $catalogUrl }}" class="dm-see-all">Toutes les catégories <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+  <div class="dm-cats">
+    @forelse(($categories ?? collect())->take(3) as $cat)
+      <a href="#prods-grid" class="dm-cat" data-cat-trigger="{{ $cat->id }}" style="text-decoration:none;color:inherit">
+        <img src="{{ $cat->displayImageUrl() }}" alt="{{ $cat->nom }}" loading="lazy">
+        <div class="dm-cat-info">
+          <div class="dm-cat-name">{{ $cat->nom }}</div>
+          <div class="dm-cat-count">{{ number_format($cat->actifs_count ?? 0, 0, ',', ' ') }} produits</div>
+        </div>
+      </a>
+    @empty
+      <p style="grid-column:1/-1;color:rgba(255,255,255,.35);padding:20px">Aucune catégorie pour le moment.</p>
+    @endforelse
+  </div>
+</section>
+
+<!-- ═══ COUPS DE CŒUR ═══ -->
+<section class="dm-section reveal" style="padding-top:0;background:var(--bg)">
+  <div class="dm-sec-head">
+    <h2 class="dm-sec-title">Coups de cœur</h2>
+    <a href="{{ $catalogUrl }}" class="dm-see-all">Voir tout <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+
+  <div class="dm-cf">
+    <button type="button" class="active" data-cat-id="all" onclick="filterCat(this,'all')">Tous</button>
+    @foreach(($filterCategories ?? collect()) as $cat)
+      <button type="button" data-cat-id="{{ $cat->id }}" onclick="filterCat(this,'{{ $cat->id }}')">{{ $cat->nom }}</button>
+    @endforeach
+  </div>
+
+  <div class="dm-prods" id="prods-grid">
+    @forelse(($featuredProducts ?? collect()) as $p)
+      @php
+        $catId = $p->categorie_id ?? '';
+        $isNew = $p->created_at && $p->created_at->gt(now()->subDays(14));
+      @endphp
+      <div class="dm-prod" data-cat="{{ $catId }}">
+        <div class="dm-prod-img">
+          <a href="{{ route('public.products.show', $p) }}" style="display:block;height:100%">
+            <img src="{{ $p->imageUrl() }}" alt="{{ $p->nom }}" loading="lazy">
+          </a>
+          @if($isNew)
+            <span class="dm-prod-badge b-new">Nouveau</span>
+          @endif
+          <div class="dm-prod-acts">
+            <button type="button" class="dm-prod-act" onclick="toggleWish(this)"><i class="fa-regular fa-heart"></i></button>
+            <a href="{{ route('public.products.show', $p) }}" class="dm-prod-act"><i class="fa-regular fa-eye"></i></a>
+          </div>
+        </div>
+        <div class="dm-prod-body">
+          <div class="dm-prod-name"><a href="{{ route('public.products.show', $p) }}">{{ $p->nom }}</a></div>
+          <div class="dm-prod-sub">{{ $p->categorie?->nom ?? 'Produit' }}</div>
+          <div class="dm-prod-foot">
+            <div><span class="dm-prod-price">{{ money_fdj($p->prix) }}</span></div>
+            @auth
+              @if(auth()->user()->type_compte === 'client')
+                <a href="{{ route('buyer.products.show', $p) }}" class="dm-add"><i class="fa-solid fa-plus"></i></a>
+              @else
+                <a href="{{ route('public.products.show', $p) }}" class="dm-add"><i class="fa-solid fa-plus"></i></a>
+              @endif
+            @else
+              <a href="{{ route('login') }}" class="dm-add"><i class="fa-solid fa-plus"></i></a>
+            @endauth
+          </div>
+        </div>
       </div>
+    @empty
+      <p style="grid-column:1/-1;color:rgba(255,255,255,.35);padding:24px">Aucun produit actif pour le moment.</p>
+    @endforelse
+  </div>
+</section>
+
+<!-- ═══ CTA VENDEUR ═══ -->
+<div class="dm-cta reveal">
+  <div>
+    <div class="dm-cta-tag">Programme vendeurs</div>
+    <h2>Vendez vos produits<br>sur <span>NexShop</span></h2>
+    <p>Rejoignez nos vendeurs locaux et atteignez des clients partout à Djibouti. Inscription gratuite.</p>
+  </div>
+  @if(auth()->check() && auth()->user()->type_compte === 'vendeur')
+    <a href="{{ route('vendeur.home') }}" class="dm-cta-btn">Mon espace vendeur <i class="fa-solid fa-arrow-right"></i></a>
+  @else
+    <a href="{{ route('vendeur.inscription.index') }}" class="dm-cta-btn">Devenir vendeur <i class="fa-solid fa-arrow-right"></i></a>
+  @endif
+</div>
+
+<!-- ═══ NEWSLETTER ═══ -->
+<div class="dm-nl reveal" id="newsletter">
+  <div>
+    <div class="dm-nl-title">Restez informé</div>
+    <div class="dm-nl-sub">Nouveautés, offres exclusives et actualités des vendeurs djiboutiens.</div>
+  </div>
+  <form class="dm-nl-form" id="nl-form" onsubmit="return handleNewsletter(event)">
+    <input type="email" id="nl-email" placeholder="Votre adresse email" required>
+    <button type="submit">S'inscrire</button>
+  </form>
+  <div id="nl-success" style="display:none;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:14px 20px;color:#22c55e;font-size:13px;font-weight:600;align-items:center;gap:8px">
+    <i class="fa-solid fa-circle-check"></i> <span id="nl-msg"></span>
+  </div>
+</div>
+
+<!-- ═══ À PROPOS ═══ -->
+<section class="dm-info reveal" id="a-propos" style="background:var(--bg2)">
+  <div class="dm-info-sub">Qui sommes-nous</div>
+  <h2 class="dm-info-title"><i class="fa-solid fa-store"></i> À propos de NexShop</h2>
+  <div class="dm-info-text" style="margin-bottom:32px">
+    <strong>NexShop</strong> est la première marketplace 100 % djiboutienne qui connecte les vendeurs locaux aux acheteurs.
+    Notre mission : rendre le commerce en ligne <strong>accessible, fiable et rapide</strong> pour tout Djibouti.<br><br>
+    Fondée en 2026, NexShop permet à chaque vendeur de créer sa boutique en quelques minutes et à chaque client de découvrir des produits authentiques avec un paiement en espèces à la livraison.
+  </div>
+  <div class="dm-info-grid">
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-bullseye"></i> Notre mission</h4>
+      <p>Démocratiser le e-commerce à Djibouti en offrant une plateforme sécurisée, simple et adaptée aux réalités locales.</p>
     </div>
-    <div>
-      <div class="f-col-title">Navigation</div>
-      <ul class="f-links">
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Accueil</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Produits</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Catégories</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Promotions</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Devenir vendeur</a></li>
-      </ul>
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-shield-halved"></i> Confiance</h4>
+      <p>Tous les vendeurs sont vérifiés (KYC). Chaque produit est validé avant publication pour garantir la qualité.</p>
     </div>
-    <div>
-      <div class="f-col-title">Informations</div>
-      <ul class="f-links">
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>À propos</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Politique de livraison</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Retours & remboursements</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>CGU & CGV</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Confidentialité</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="f-col-title">Contact</div>
-      <div class="f-contact"><i class="fa-solid fa-location-dot"></i><span>15 Rue du Commerce, 75015 Paris</span></div>
-      <div class="f-contact"><i class="fa-solid fa-phone"></i><span>+33 1 23 45 67 89</span></div>
-      <div class="f-contact"><i class="fa-solid fa-envelope"></i><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="22414d4c56434156624c475a514a4d520c4450">[email&#160;protected]</a></span></div>
-      <div class="f-contact"><i class="fa-solid fa-clock"></i><span>Lun–Sam : 9h – 18h</span></div>
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-truck-fast"></i> Livraison locale</h4>
+      <p>Livraison partout à Djibouti en 24h. Gratuite dès 10 000 Fdj. Paiement en espèces à la réception.</p>
     </div>
   </div>
-  <div class="footer-bottom">
-    <span>© 2026 NexShop. Tous droits réservés.</span>
-    <div class="pay-chips">
-      <div class="pay-chip"><i class="fa-solid fa-money-bill-wave"></i> Espèces</div>
-      <div class="pay-chip"><i class="fa-solid fa-truck-fast"></i> Livraison</div>
-      <div class="pay-chip"><i class="fa-solid fa-shield-halved"></i> Sécurisé</div>
+</section>
+
+<!-- ═══ CONTACT ═══ -->
+@include('partials.welcome-contact')
+
+<!-- ═══ CGV ═══ -->
+<section class="dm-info reveal" id="cgv" style="background:var(--bg2)">
+  <div class="dm-info-sub">Conditions générales</div>
+  <h2 class="dm-info-title"><i class="fa-solid fa-file-contract"></i> Conditions Générales de Vente</h2>
+  <div class="dm-info-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-cart-shopping"></i> Commandes</h4>
+      <p>Toute commande passée sur NexShop est un engagement d'achat. Le paiement s'effectue en espèces à la livraison. La commande est confirmée dès que le vendeur l'accepte.</p>
+    </div>
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-truck"></i> Livraison</h4>
+      <p>Livraison sous 24h à Djibouti-ville. Gratuite pour les commandes supérieures à 10 000 Fdj. Le client est contacté avant la livraison.</p>
+    </div>
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-rotate-left"></i> Retours & remboursements</h4>
+      <p>Retour possible sous 5 jours après réception. Le produit doit être dans son état d'origine. L'admin contacte le vendeur pour traiter chaque demande.</p>
+    </div>
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-user-shield"></i> Données personnelles</h4>
+      <p>NexShop protège vos données conformément à la législation djiboutienne. Aucune donnée n'est partagée avec des tiers sans votre consentement.</p>
+    </div>
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-ban"></i> Responsabilité</h4>
+      <p>NexShop agit comme intermédiaire. Chaque vendeur est responsable de la qualité et de la conformité de ses produits. NexShop modère les avis et valide les produits.</p>
+    </div>
+    <div class="dm-info-card">
+      <h4><i class="fa-solid fa-gavel"></i> Litiges</h4>
+      <p>En cas de litige, contactez notre support. NexShop s'engage à résoudre tout différend dans un délai de 7 jours ouvrés en médiation avec le vendeur.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ AIDE / FAQ ═══ -->
+<section class="dm-info reveal" id="aide" style="background:var(--bg)">
+  <div class="dm-info-sub">Centre d'aide</div>
+  <h2 class="dm-info-title"><i class="fa-solid fa-circle-question"></i> Aide & FAQ</h2>
+  <div class="dm-faq">
+    <div class="dm-faq-item">
+      <button class="dm-faq-q" onclick="this.parentElement.classList.toggle('open')">Comment passer une commande ? <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dm-faq-a">Parcourez les produits, ajoutez-les au panier, puis validez votre commande en indiquant votre adresse de livraison. Le paiement se fait en espèces à la réception.</div>
+    </div>
+    <div class="dm-faq-item">
+      <button class="dm-faq-q" onclick="this.parentElement.classList.toggle('open')">Comment demander un retour ? <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dm-faq-a">Rendez-vous dans « Mes commandes », ouvrez la commande livrée, puis cliquez sur « Demander un retour ». Vous avez 5 jours après la livraison. L'administrateur contactera le vendeur pour traiter votre demande.</div>
+    </div>
+    <div class="dm-faq-item">
+      <button class="dm-faq-q" onclick="this.parentElement.classList.toggle('open')">Quels sont les modes de paiement ? <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dm-faq-a">NexShop propose le paiement en espèces à la livraison. C'est simple, sécurisé et sans frais supplémentaires.</div>
+    </div>
+    <div class="dm-faq-item">
+      <button class="dm-faq-q" onclick="this.parentElement.classList.toggle('open')">La livraison est-elle gratuite ? <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dm-faq-a">Oui, la livraison est gratuite pour toute commande d'un montant supérieur à 10 000 Fdj. En dessous, des frais de livraison peuvent s'appliquer.</div>
+    </div>
+    <div class="dm-faq-item">
+      <button class="dm-faq-q" onclick="this.parentElement.classList.toggle('open')">Comment devenir vendeur sur NexShop ? <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dm-faq-a">Cliquez sur « Devenir vendeur » et suivez les 3 étapes : créer un compte, vérifier votre identité (KYC), puis créer votre boutique. L'inscription est gratuite avec un plan Free (10 commandes/mois).</div>
+    </div>
+    <div class="dm-faq-item">
+      <button class="dm-faq-q" onclick="this.parentElement.classList.toggle('open')">Comment contacter le support NexShop ? <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dm-faq-a">Utilisez le formulaire de contact ci-dessus, envoyez un email à nexshop.dj@gmail.com ou appelez le +253 77 44 78 73 (Sam–Jeu, 8h–20h).</div>
+    </div>
+    <div class="dm-faq-item">
+      <button class="dm-faq-q" onclick="this.parentElement.classList.toggle('open')">Mon compte peut-il être suspendu ? <i class="fa-solid fa-chevron-down"></i></button>
+      <div class="dm-faq-a">Un compte peut être suspendu en cas de non-respect des CGV, de fraude ou d'abus signalé. Vous serez toujours notifié par email avec la raison.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="dm-footer">
+  <div class="dm-footer-top">
+    <div class="dm-f-brand">
+      <div class="dm-f-logo">Nex<span>Shop</span></div>
+      <p class="dm-f-desc">La marketplace qui connecte acheteurs et vendeurs. Paiement en espèces, livraison rapide.</p>
+      <div class="dm-f-socials">
+        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+      </div>
+    </div>
+    <div class="dm-f-col">
+      <h4>Navigation</h4>
+      <a href="#">Accueil</a>
+      <a href="{{ $catalogUrl }}">Produits</a>
+      @auth
+        @if(auth()->user()->type_compte === 'client')
+          <a href="{{ route('buyer.cart.index') }}">Panier</a>
+          <a href="{{ route('buyer.orders.index') }}">Mes commandes</a>
+        @endif
+      @else
+        <a href="{{ route('login') }}">Panier</a>
+        <a href="{{ route('login') }}">Mes commandes</a>
+      @endauth
+    </div>
+    <div class="dm-f-col">
+      <h4>Informations</h4>
+      <a href="#a-propos">À propos</a>
+      <a href="#cgv">Politique de livraison</a>
+      <a href="#cgv">CGU & CGV</a>
+      <a href="#cgv">Confidentialité</a>
+    </div>
+  </div>
+  <div class="dm-footer-bottom">
+    <div class="dm-f-copy">© 2026 NexShop — Djibouti. Tous droits réservés.</div>
+    <div class="dm-f-bottom-links">
+      <a href="#cgv">CGV</a>
+      <a href="#aide">Aide</a>
+      <a href="#contact">Contact</a>
     </div>
   </div>
 </footer>
 
 <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="tmsg">Action effectuée</span></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 function toggleDrawer(){document.getElementById('drawer').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
-function toggleWish(btn){const i=btn.querySelector('i');const a=btn.classList.toggle('active');i.className=a?'fa-solid fa-heart':'fa-regular fa-heart';showToast(a?'❤️ Ajouté aux favoris':'Retiré des favoris')}
-let cart=3;
-function addCart(btn){cart++;document.querySelector('.badge').textContent=cart;btn.innerHTML='<i class="fa-solid fa-check"></i>';btn.style.background='#22C55E';setTimeout(()=>{btn.innerHTML='<i class="fa-solid fa-plus"></i>';btn.style.background=''},1400);showToast('🛒 Ajouté au panier !')}
+
+function applyCatFilter(cat){
+  const grid=document.getElementById('prods-grid');
+  if(!grid)return;
+  grid.querySelectorAll('.dm-prod').forEach(card=>{
+    const c=card.dataset.cat||'';
+    card.style.display=(cat==='all'||String(c)===String(cat))?'':'none';
+  });
+}
+function filterCat(btn,cat){
+  document.querySelectorAll('.dm-cf button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyCatFilter(cat);
+}
+document.querySelectorAll('[data-cat-trigger]').forEach(el=>{
+  el.addEventListener('click',e=>{
+    const id=el.dataset.catTrigger;
+    if(id===undefined||id==='')return;
+    e.preventDefault();
+    const b=document.querySelector('.dm-cf button[data-cat-id="'+id+'"]');
+    if(b)filterCat(b,id);
+    else{
+      document.querySelectorAll('.dm-cf button').forEach(x=>x.classList.remove('active'));
+      applyCatFilter(id);
+    }
+    document.getElementById('prods-grid')?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+
+function handleContact(e){
+  e.preventDefault();
+  var btn=document.getElementById('ct-btn');
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Envoi…';
+  fetch('/contact',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content||''},body:JSON.stringify({nom:document.getElementById('ct-nom').value,email:document.getElementById('ct-email').value,sujet:document.getElementById('ct-sujet').value,message:document.getElementById('ct-message').value})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    document.getElementById('contact-form').style.display='none';
+    document.getElementById('ct-success').style.display='flex';
+  })
+  .catch(function(){btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-paper-plane"></i> Envoyer';showToast('Erreur, veuillez réessayer.');});
+  return false;
+}
+
+function handleNewsletter(e){
+  e.preventDefault();
+  var email=document.getElementById('nl-email').value.trim();
+  if(!email)return false;
+  fetch('/newsletter',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content||''},body:JSON.stringify({email:email})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    document.getElementById('nl-form').style.display='none';
+    var box=document.getElementById('nl-success');box.style.display='flex';
+    document.getElementById('nl-msg').textContent=d.message||'Merci ! Vous êtes inscrit à la newsletter.';
+  })
+  .catch(function(){
+    showToast('Erreur, veuillez réessayer.');
+  });
+  return false;
+}
+
+function toggleWish(btn){const i=btn.querySelector('i');const a=btn.classList.toggle('active');i.className=a?'fa-solid fa-heart':'fa-regular fa-heart';showToast(a?'Ajouté aux favoris':'Retiré des favoris')}
 let tt;
 function showToast(m){const t=document.getElementById('toast');document.getElementById('tmsg').textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2800)}
-let end=Date.now()+(8*3600+24*60)*1000;
-function cd(){const d=Math.max(0,end-Date.now());document.getElementById('cd-h').textContent=String(Math.floor(d/3600000)).padStart(2,'0');document.getElementById('cd-m').textContent=String(Math.floor(d%3600000/60000)).padStart(2,'0');document.getElementById('cd-s').textContent=String(Math.floor(d%60000/1000)).padStart(2,'0')}
-cd();setInterval(cd,1000);
+
 const obs=new IntersectionObserver(e=>e.forEach((el,i)=>{if(el.isIntersecting)setTimeout(()=>el.target.classList.add('visible'),i*80)}),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script>

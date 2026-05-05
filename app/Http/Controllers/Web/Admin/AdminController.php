@@ -6,21 +6,40 @@ use App\Http\Controllers\Controller;
 use App\Models\Avis;
 use App\Models\Categorie;
 use App\Models\Commande;
-use App\Models\CommandeDetail;
+use App\Models\DemandeRetour;
+use App\Models\Produit;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+    private function adminCounters(): array
+    {
+        $pendingReviews = Avis::where('statut', 'en_attente')->count();
+        $pendingProducts = Produit::where('statut', 'en_attente_admin')->count();
+        $pendingKyc = User::where('type_compte', 'vendeur')->where('statut_kyc', 'en_attente')->count();
+        $pendingReturns = DemandeRetour::where('statut', 'en_attente')->count();
+
+        return [
+            'pendingReviews' => $pendingReviews,
+            'pendingProducts' => $pendingProducts,
+            'pendingKyc' => $pendingKyc,
+            'pendingReturns' => $pendingReturns,
+            'adminAlertCount' => $pendingReviews + $pendingProducts + $pendingKyc + $pendingReturns,
+        ];
+    }
+
     public function dashboard(Request $request)
     {
         $section = $request->get('section', 'stats');
+        $counters = $this->adminCounters();
 
         // KPIs
         $totalSales = Commande::where('statut_paiement', 'paye')->sum('montant_total');
         $activeUsers = User::where('statut', 'actif')->count();
-        $pendingReviews = Avis::where('statut', 'en_attente')->count();
+        $pendingReviews = $counters['pendingReviews'];
+        $pendingProducts = $counters['pendingProducts'];
         $categoriesCount = Categorie::count();
 
         // Tendances (mois courant vs mois précédent)
@@ -58,12 +77,76 @@ class AdminController extends Controller
             ->get();
 
         $donutLabels = $categoryStats->pluck('nom')->toArray();
-        $donutData = $categoryStats->pluck('total')->map(fn($v) => round($v, 2))->toArray();
+        $donutData = $categoryStats->pluck('total')->map(fn ($v) => round($v, 2))->toArray();
 
         return view('admin.admin', compact(
-            'section', 'totalSales', 'activeUsers', 'pendingReviews', 'categoriesCount',
+            'section', 'totalSales', 'activeUsers', 'pendingReviews', 'pendingProducts', 'categoriesCount',
             'salesTrend', 'usersTrend',
             'chartLabels', 'chartData', 'donutLabels', 'donutData'
-        ));
+        ) + [
+            'adminAlertCount' => $counters['adminAlertCount'],
+        ]);
+    }
+
+    public function notifications()
+    {
+        $section = 'notifications';
+        $counters = $this->adminCounters();
+
+        $recentKyc = User::query()
+            ->where('type_compte', 'vendeur')
+            ->where('statut_kyc', 'en_attente')
+            ->latest()
+            ->take(12)
+            ->get(['id', 'nom', 'email', 'created_at']);
+
+        $recentProducts = Produit::query()
+            ->where('statut', 'en_attente_admin')
+            ->with('vendeur:id,nom')
+            ->latest()
+            ->take(12)
+            ->get(['id', 'vendeur_id', 'nom', 'created_at']);
+
+        $recentReviews = Avis::query()
+            ->where('statut', 'en_attente')
+            ->with(['client:id,nom', 'produit:id,nom'])
+            ->latest()
+            ->take(12)
+            ->get(['id', 'produit_id', 'client_id', 'created_at']);
+
+        $recentReturns = DemandeRetour::query()
+            ->where('statut', 'en_attente')
+            ->with(['client:id,nom', 'produit:id,nom'])
+            ->latest()
+            ->take(12)
+            ->get(['id', 'client_id', 'produit_id', 'created_at']);
+
+        $recentUsers = User::query()
+            ->latest()
+            ->take(12)
+            ->get(['id', 'nom', 'type_compte', 'created_at']);
+
+        return view('admin.admin', [
+            'section' => $section,
+            'pendingReviews' => $counters['pendingReviews'],
+            'pendingProducts' => $counters['pendingProducts'],
+            'adminAlertCount' => $counters['adminAlertCount'],
+            'recentKyc' => $recentKyc,
+            'recentProducts' => $recentProducts,
+            'recentReviews' => $recentReviews,
+            'recentReturns' => $recentReturns,
+            'recentUsers' => $recentUsers,
+            // Valeurs par défaut pour la vue admin partagée.
+            'totalSales' => 0,
+            'activeUsers' => 0,
+            'categoriesCount' => Categorie::count(),
+            'salesTrend' => 0,
+            'usersTrend' => 0,
+            'chartLabels' => [],
+            'chartData' => [],
+            'donutLabels' => [],
+            'donutData' => []
+        ]);
+
     }
 }

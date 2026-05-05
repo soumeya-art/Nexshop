@@ -13,20 +13,30 @@ class CartController extends Controller
     {
         $items = auth()->user()->panier()->with('produit')->get();
         $total = $items->sum(fn ($item) => $item->produit->prix * $item->quantite);
+        $deliveryConfig = config('nexshop.delivery', []);
+        $deliveryFees = [
+            'city' => (float) ($deliveryConfig['city_fee_fdj'] ?? 500),
+            'region' => (float) ($deliveryConfig['region_fee_fdj'] ?? 1000),
+            'free_threshold' => (float) ($deliveryConfig['free_delivery_subtotal_fdj'] ?? 10000),
+        ];
 
-        return view('buyer.cart.index', compact('items', 'total'));
+        return view('buyer.cart.index', compact('items', 'total', 'deliveryFees'));
     }
 
     public function add(Request $request)
     {
         $request->validate([
             'produit_id' => 'required|exists:produits,id',
-            'quantite'   => 'nullable|integer|min:1|max:99',
+            'quantite' => 'nullable|integer|min:1|max:99',
         ]);
 
-        $produit = Produit::findOrFail($request->produit_id);
+        $produit = Produit::with('vendeur')->findOrFail($request->produit_id);
         if ($produit->statut !== 'actif' || $produit->stock < 1) {
             return back()->with('error', 'Ce produit n\'est pas disponible.');
+        }
+        $vendeur = $produit->vendeur;
+        if ($vendeur && ! $vendeur->sellerAcceptsNewOrders()) {
+            return back()->with('error', 'Ce vendeur ne peut pas recevoir de nouvelles commandes pour le moment (limite Free ou abonnement expiré).');
         }
 
         $qty = min($request->input('quantite', 1), $produit->stock);
@@ -36,9 +46,9 @@ class CartController extends Controller
             $existing->update(['quantite' => min($existing->quantite + $qty, $produit->stock)]);
         } else {
             Panier::create([
-                'client_id'  => auth()->id(),
+                'client_id' => auth()->id(),
                 'produit_id' => $produit->id,
-                'quantite'   => $qty,
+                'quantite' => $qty,
             ]);
         }
 
@@ -63,6 +73,7 @@ class CartController extends Controller
             abort(403);
         }
         $cart->delete();
+
         return back()->with('success', 'Article retiré du panier.');
     }
 }

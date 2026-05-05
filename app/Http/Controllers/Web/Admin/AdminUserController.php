@@ -14,8 +14,8 @@ class AdminUserController extends Controller
 
         if ($request->filled('q')) {
             $query->where(function ($q) use ($request) {
-                $q->where('nom', 'like', '%' . $request->q . '%')
-                  ->orWhere('email', 'like', '%' . $request->q . '%');
+                $q->where('nom', 'like', '%'.$request->q.'%')
+                    ->orWhere('email', 'like', '%'.$request->q.'%');
             });
         }
 
@@ -27,7 +27,7 @@ class AdminUserController extends Controller
 
         return view('admin.admin', [
             'section' => 'users',
-            'users'   => $users,
+            'users' => $users,
             // KPI placeholders (needed by the layout)
             'totalSales' => 0, 'activeUsers' => 0, 'pendingReviews' => 0,
             'categoriesCount' => 0, 'salesTrend' => 0, 'usersTrend' => 0,

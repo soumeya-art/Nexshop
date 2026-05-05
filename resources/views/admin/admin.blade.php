@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+@include('partials.theme-init')
 <title>NexShop — Administration</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -35,6 +36,9 @@ a{text-decoration:none;color:inherit}
 .nav-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--orange);overflow:hidden;cursor:pointer}
 .nav-avatar img{width:100%;height:100%;object-fit:cover}
 .nav-user-name{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.nav-logout-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-xs);border:1px solid var(--border);background:var(--bg3);color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--T);text-decoration:none}
+.nav-logout-btn:hover{border-color:var(--danger);color:var(--danger);background:rgba(239,68,68,.1)}
+@@media(max-width:640px){.nav-logout-btn span{display:none}}
 
 /* LAYOUT */
 .layout{display:flex;flex:1}
@@ -60,7 +64,7 @@ a{text-decoration:none;color:inherit}
 .page-sub{font-size:12px;color:var(--muted);margin-bottom:22px}
 
 /* KPIs */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:24px}
 .kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:border-color var(--T)}
 .kpi-card:hover{border-color:rgba(255,107,53,.2)}
 .kpi-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em;font-family:'Space Grotesk',sans-serif}
@@ -152,6 +156,7 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto}
 .modal-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800;color:var(--white);margin-bottom:16px}
 </style>
+@include('partials.theme-manager')
 </head>
 <body>
 
@@ -159,23 +164,39 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
   <a href="{{ route('admin.home') }}" class="nav-logo">Nex<span>Shop</span></a>
   <span class="admin-badge">ADMIN</span>
   <div class="nav-right">
-    <div class="nav-icon"><i class="fa-regular fa-bell"></i><span class="nav-badge">{{ $pendingReviews }}</span></div>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false"><i class="fa-regular fa-moon" aria-hidden="true"></i><span class="theme-toggle-label">Thème</span></button>
+    <a href="{{ route('admin.notifications.index') }}" class="nav-icon" title="Notifications admin">
+      <i class="fa-regular fa-bell"></i>
+      @if(($adminAlertCount ?? 0) > 0)
+        <span class="nav-badge">{{ ($adminAlertCount ?? 0) > 9 ? '9+' : ($adminAlertCount ?? 0) }}</span>
+      @endif
+    </a>
     <span class="nav-user-name">{{ Auth::user()->nom }}</span>
+    <a href="{{ route('logout') }}" class="nav-logout-btn" title="Se déconnecter"><i class="fa-solid fa-right-from-bracket"></i><span>Déconnexion</span></a>
   </div>
 </nav>
 
+@php
+  $__pendingProductsAdminTab = isset($pendingProducts) ? $pendingProducts : \App\Models\Produit::where('statut', 'en_attente_admin')->count();
+  $__pendingKycVendeurs = \App\Models\User::where('type_compte', 'vendeur')->where('statut_kyc', 'en_attente')->count();
+  $__unreadContact = \App\Models\ContactMessage::where('lu', false)->count();
+@endphp
 <div class="layout">
   <aside class="sidebar">
     <div class="sb-label">Administration</div>
     <a href="{{ route('admin.home') }}" class="sb-item {{ $section === 'stats' ? 'active' : '' }}"><i class="fa-solid fa-chart-line"></i> Statistiques</a>
     <a href="{{ route('admin.users') }}" class="sb-item {{ $section === 'users' ? 'active' : '' }}"><i class="fa-solid fa-users"></i> Utilisateurs</a>
-    <a href="{{ route('admin.moderation') }}" class="sb-item {{ $section === 'moderation' ? 'active' : '' }}"><i class="fa-regular fa-comment"></i> Modération</a>
+    <a href="{{ route('admin.notifications.index') }}" class="sb-item {{ $section === 'notifications' ? 'active' : '' }}"><i class="fa-regular fa-bell"></i> Notifications</a>
+    <a href="{{ route('admin.moderation') }}" class="sb-item {{ $section === 'moderation' ? 'active' : '' }}"><i class="fa-regular fa-comment"></i> Modération avis</a>
+    <a href="{{ route('admin.produits.moderation') }}" class="sb-item {{ $section === 'products_moderation' ? 'active' : '' }}"><i class="fa-solid fa-shirt"></i> Produits à valider</a>
+    <a href="{{ route('admin.kyc.index') }}" class="sb-item {{ request()->routeIs('admin.kyc.*') ? 'active' : '' }}"><i class="fa-solid fa-id-card-clip"></i> Inscriptions vendeurs @if($__pendingKycVendeurs > 0)<span style="margin-left:auto;font-size:10px;font-weight:800;color:var(--orange)">{{ $__pendingKycVendeurs }}</span>@endif</a>
     <a href="{{ route('admin.categories') }}" class="sb-item {{ $section === 'categories' ? 'active' : '' }}"><i class="fa-solid fa-layer-group"></i> Catégories</a>
+    <a href="{{ route('admin.subscriptions.index') }}" class="sb-item"><i class="fa-solid fa-crown"></i> Abonnements vendeurs</a>
+    @php $__pendingReturns = \App\Models\DemandeRetour::where('statut', 'en_attente')->count(); @endphp
+    <a href="{{ route('admin.contact-messages.index') }}" class="sb-item {{ request()->routeIs('admin.contact-messages.*') ? 'active' : '' }}"><i class="fa-solid fa-envelope"></i> Messages contact @if($__unreadContact > 0)<span style="margin-left:auto;font-size:10px;font-weight:800;color:var(--orange)">{{ $__unreadContact }}</span>@endif</a>
+    <a href="{{ route('admin.returns.index') }}" class="sb-item {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}"><i class="fa-solid fa-rotate-left"></i> Retours @if($__pendingReturns > 0)<span style="margin-left:auto;font-size:10px;font-weight:800;color:var(--orange)">{{ $__pendingReturns }}</span>@endif</a>
     <div class="sb-bottom">
-      <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit" class="sb-item sb-logout" style="width:100%;background:none;border:1px solid transparent;cursor:pointer;font-family:inherit"><i class="fa-solid fa-right-from-bracket"></i> Se déconnecter</button>
-      </form>
+      <a href="{{ route('logout') }}" class="sb-item sb-logout"><i class="fa-solid fa-right-from-bracket"></i> Se déconnecter</a>
     </div>
   </aside>
 
@@ -184,8 +205,33 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
     <div class="top-tabs">
       <a href="{{ route('admin.home') }}" class="top-tab {{ $section === 'stats' ? 'active' : '' }}"><i class="fa-solid fa-chart-bar"></i> Stats</a>
       <a href="{{ route('admin.users') }}" class="top-tab {{ $section === 'users' ? 'active' : '' }}"><i class="fa-solid fa-users"></i> Utilisateurs</a>
-      <a href="{{ route('admin.moderation') }}" class="top-tab {{ $section === 'moderation' ? 'active' : '' }}"><i class="fa-regular fa-comment"></i> Modération</a>
+      <a href="{{ route('admin.notifications.index') }}" class="top-tab {{ $section === 'notifications' ? 'active' : '' }}"><i class="fa-regular fa-bell"></i> Notifications
+        @if(($adminAlertCount ?? 0) > 0)
+          <span style="opacity:.85;font-weight:700"> ({{ ($adminAlertCount ?? 0) > 99 ? '99+' : ($adminAlertCount ?? 0) }})</span>
+        @endif
+      </a>
+      <a href="{{ route('admin.moderation') }}" class="top-tab {{ $section === 'moderation' ? 'active' : '' }}"><i class="fa-regular fa-comment"></i> Avis</a>
+      <a href="{{ route('admin.produits.moderation') }}" class="top-tab {{ $section === 'products_moderation' ? 'active' : '' }}"><i class="fa-solid fa-shirt"></i> Produits
+        @if($__pendingProductsAdminTab > 0)
+          <span style="opacity:.85;font-weight:700"> ({{ $__pendingProductsAdminTab }})</span>
+        @endif
+      </a>
+      <a href="{{ route('admin.kyc.index') }}" class="top-tab {{ request()->routeIs('admin.kyc.*') ? 'active' : '' }}"><i class="fa-solid fa-store"></i> Vendeurs
+        @if($__pendingKycVendeurs > 0)
+          <span style="opacity:.85;font-weight:700"> ({{ $__pendingKycVendeurs }})</span>
+        @endif
+      </a>
       <a href="{{ route('admin.categories') }}" class="top-tab {{ $section === 'categories' ? 'active' : '' }}"><i class="fa-solid fa-layer-group"></i> Catégories</a>
+      <a href="{{ route('admin.contact-messages.index') }}" class="top-tab {{ request()->routeIs('admin.contact-messages.*') ? 'active' : '' }}"><i class="fa-solid fa-envelope"></i> Messages contact
+        @if($__unreadContact > 0)
+          <span style="opacity:.85;font-weight:700"> ({{ $__unreadContact }})</span>
+        @endif
+      </a>
+      <a href="{{ route('admin.returns.index') }}" class="top-tab {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}"><i class="fa-solid fa-rotate-left"></i> Retours
+        @if($__pendingReturns > 0)
+          <span style="opacity:.85;font-weight:700"> ({{ $__pendingReturns }})</span>
+        @endif
+      </a>
     </div>
 
     @if(session('success'))
@@ -193,6 +239,130 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
     @endif
     @if(session('error'))
     <div class="alert alert-error"><i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}</div>
+    @endif
+
+    {{-- ═══════════ SECTION : NOTIFICATIONS ADMIN ═══════════ --}}
+    @if($section === 'notifications')
+    <div class="page-title">Notifications admin</div>
+    <div class="page-sub">Nouveautés à traiter : inscriptions vendeurs, produits, avis, retours et nouveaux comptes.</div>
+
+    <div class="kpi-grid" style="margin-bottom:18px">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fa-solid fa-id-card-clip"></i></div>
+        <div class="kpi-label">KYC en attente</div>
+        <div class="kpi-val">{{ $__pendingKycVendeurs }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon orange"><i class="fa-solid fa-shirt"></i></div>
+        <div class="kpi-label">Produits à valider</div>
+        <div class="kpi-val">{{ $pendingProducts ?? 0 }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon yellow"><i class="fa-regular fa-comment"></i></div>
+        <div class="kpi-label">Avis en attente</div>
+        <div class="kpi-val">{{ $pendingReviews ?? 0 }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fa-solid fa-rotate-left"></i></div>
+        <div class="kpi-label">Retours en attente</div>
+        <div class="kpi-val">{{ $__pendingReturns }}</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><div><div class="card-title">Inscriptions vendeurs (KYC)</div><div class="card-sub">Demandes les plus récentes à examiner.</div></div></div>
+      <table class="table">
+        <thead><tr><th>Vendeur</th><th>Email</th><th>Reçu</th><th>Action</th></tr></thead>
+        <tbody>
+          @forelse(($recentKyc ?? collect()) as $u)
+          <tr>
+            <td style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white)">{{ $u->nom }}</td>
+            <td>{{ $u->email }}</td>
+            <td style="color:var(--muted)">{{ $u->created_at?->diffForHumans() }}</td>
+            <td><a href="{{ route('admin.kyc.show', $u) }}" style="color:var(--orange)">Ouvrir</a></td>
+          </tr>
+          @empty
+          <tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucun nouveau dossier KYC.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><div><div class="card-title">Nouveaux produits en attente</div><div class="card-sub">Validation avant publication.</div></div></div>
+      <table class="table">
+        <thead><tr><th>Produit</th><th>Vendeur</th><th>Reçu</th><th>Action</th></tr></thead>
+        <tbody>
+          @forelse(($recentProducts ?? collect()) as $p)
+          <tr>
+            <td style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white)">{{ $p->nom }}</td>
+            <td>{{ $p->vendeur->nom ?? '—' }}</td>
+            <td style="color:var(--muted)">{{ $p->created_at?->diffForHumans() }}</td>
+            <td><a href="{{ route('admin.produits.moderation') }}" style="color:var(--orange)">Traiter</a></td>
+          </tr>
+          @empty
+          <tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucun nouveau produit en attente.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><div><div class="card-title">Avis en attente</div><div class="card-sub">Nouveaux avis à modérer.</div></div></div>
+      <table class="table">
+        <thead><tr><th>Client</th><th>Produit</th><th>Reçu</th><th>Action</th></tr></thead>
+        <tbody>
+          @forelse(($recentReviews ?? collect()) as $rv)
+          <tr>
+            <td style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white)">{{ $rv->client->nom ?? '—' }}</td>
+            <td>{{ $rv->produit->nom ?? '—' }}</td>
+            <td style="color:var(--muted)">{{ $rv->created_at?->diffForHumans() }}</td>
+            <td><a href="{{ route('admin.moderation') }}" style="color:var(--orange)">Modérer</a></td>
+          </tr>
+          @empty
+          <tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucun nouvel avis en attente.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-head"><div><div class="card-title">Retours clients</div><div class="card-sub">Demandes retour à traiter.</div></div></div>
+      <table class="table">
+        <thead><tr><th>Client</th><th>Produit</th><th>Reçu</th><th>Action</th></tr></thead>
+        <tbody>
+          @forelse(($recentReturns ?? collect()) as $rt)
+          <tr>
+            <td style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white)">{{ $rt->client->nom ?? '—' }}</td>
+            <td>{{ $rt->produit->nom ?? '—' }}</td>
+            <td style="color:var(--muted)">{{ $rt->created_at?->diffForHumans() }}</td>
+            <td><a href="{{ route('admin.returns.show', $rt) }}" style="color:var(--orange)">Voir</a></td>
+          </tr>
+          @empty
+          <tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucune nouvelle demande de retour.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Nouveaux comptes créés</div><div class="card-sub">Dernières inscriptions sur la plateforme.</div></div></div>
+      <table class="table">
+        <thead><tr><th>Nom</th><th>Rôle</th><th>Inscrit</th><th>Action</th></tr></thead>
+        <tbody>
+          @forelse(($recentUsers ?? collect()) as $nu)
+          <tr>
+            <td style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white)">{{ $nu->nom }}</td>
+            <td style="text-transform:capitalize">{{ $nu->type_compte }}</td>
+            <td style="color:var(--muted)">{{ $nu->created_at?->diffForHumans() }}</td>
+            <td><a href="{{ route('admin.users') }}" style="color:var(--orange)">Consulter</a></td>
+          </tr>
+          @empty
+          <tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucune nouvelle inscription récente.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
     @endif
 
     {{-- ═══════════ SECTION : STATISTIQUES ═══════════ --}}
@@ -205,7 +375,7 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
       <div class="kpi-card">
         <div class="kpi-icon orange"><i class="fa-solid fa-chart-line"></i></div>
         <div class="kpi-label">Ventes Totales</div>
-        <div class="kpi-val">{{ number_format($totalSales, 0, ',', ' ') }} DA</div>
+        <div class="kpi-val">{{ money_fdj($totalSales) }}</div>
         <div class="kpi-trend {{ $salesTrend >= 0 ? 'up' : 'down' }}">
           <i class="fa-solid fa-arrow-{{ $salesTrend >= 0 ? 'up' : 'down' }}"></i> {{ $salesTrend >= 0 ? '+' : '' }}{{ $salesTrend }}% par rapport au mois dernier
         </div>
@@ -222,6 +392,18 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
         <div class="kpi-icon yellow"><i class="fa-regular fa-comment"></i></div>
         <div class="kpi-label">Avis en attente</div>
         <div class="kpi-val">{{ $pendingReviews }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon orange"><i class="fa-solid fa-clock"></i></div>
+        <div class="kpi-label">Produits vendeurs à valider</div>
+        <div class="kpi-val">{{ $pendingProducts ?? 0 }}</div>
+        <div style="margin-top:8px;font-size:11px;font-weight:600"><a href="{{ route('admin.produits.moderation') }}" style="color:var(--orange);text-decoration:none">Ouvrir la file →</a></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fa-solid fa-id-card-clip"></i></div>
+        <div class="kpi-label">Inscriptions vendeurs (KYC)</div>
+        <div class="kpi-val">{{ $__pendingKycVendeurs }}</div>
+        <div style="margin-top:8px;font-size:11px;font-weight:600"><a href="{{ route('admin.kyc.index') }}" style="color:var(--orange);text-decoration:none">Approuver ou rejeter →</a></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon green"><i class="fa-solid fa-layer-group"></i></div>
@@ -349,7 +531,22 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
     {{-- ═══════════ SECTION : MODÉRATION ═══════════ --}}
     @if($section === 'moderation')
     <div class="page-title">Modération des avis</div>
-    <div class="page-sub">Approuvez ou refusez les avis clients en attente de validation.</div>
+    <div class="page-sub">
+      @if(($moderationTab ?? 'en_attente') === 'en_attente')
+        Examinez les avis en attente, puis approuvez-les ou refusez-les.
+      @elseif(($moderationTab ?? '') === 'approuve')
+        Avis visibles publiquement sur les fiches produits.
+      @else
+        Avis refusés : non affichés aux acheteurs.
+      @endif
+    </div>
+
+    @php $mtab = $moderationTab ?? 'en_attente'; $mc = $moderationCounts ?? ['en_attente' => 0, 'approuve' => 0, 'refuse' => 0]; @endphp
+    <div class="top-tabs" style="flex-wrap:wrap">
+      <a href="{{ route('admin.moderation', ['tab' => 'en_attente']) }}" class="top-tab {{ $mtab === 'en_attente' ? 'active' : '' }}">En attente @if(($mc['en_attente'] ?? 0) > 0)<span style="opacity:.75;font-weight:600">({{ $mc['en_attente'] }})</span>@endif</a>
+      <a href="{{ route('admin.moderation', ['tab' => 'approuve']) }}" class="top-tab {{ $mtab === 'approuve' ? 'active' : '' }}">Approuvés <span style="opacity:.75;font-weight:600">({{ $mc['approuve'] ?? 0 }})</span></a>
+      <a href="{{ route('admin.moderation', ['tab' => 'refuse']) }}" class="top-tab {{ $mtab === 'refuse' ? 'active' : '' }}">Refusés <span style="opacity:.75;font-weight:600">({{ $mc['refuse'] ?? 0 }})</span></a>
+    </div>
 
     @forelse($avis as $review)
     <div class="review-card">
@@ -358,13 +555,23 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
           <div class="review-author">{{ $review->client->nom ?? 'Utilisateur supprimé' }}</div>
           <div class="review-product">Sur : {{ $review->produit->nom ?? 'Produit supprimé' }} • {{ $review->date_avis?->format('d/m/Y') }}</div>
         </div>
-        <div class="review-stars" style="margin-left:auto">
-          @for($i = 1; $i <= 5; $i++)
-            @if($i <= $review->note) ★ @else ☆ @endif
-          @endfor
+        <div class="review-meta-top" style="margin-left:auto;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div class="review-stars">
+            @for($i = 1; $i <= 5; $i++)
+              @if($i <= $review->note) ★ @else ☆ @endif
+            @endfor
+          </div>
+          @if($review->statut === 'approuve')
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:50px;background:rgba(34,197,94,.2);color:#22C55E">Approuvé</span>
+          @elseif($review->statut === 'refuse')
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:50px;background:rgba(239,68,68,.2);color:#EF4444">Refusé</span>
+          @else
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:50px;background:rgba(245,158,11,.2);color:#F59E0B">En attente</span>
+          @endif
         </div>
       </div>
       <div class="review-text">{{ $review->commentaire ?? 'Aucun commentaire.' }}</div>
+      @if($mtab === 'en_attente' && $review->statut === 'en_attente')
       <div class="review-actions">
         <form action="{{ route('admin.moderation.approve', $review) }}" method="POST" style="display:inline">
           @csrf
@@ -375,12 +582,37 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
           <button type="submit" class="btn-primary btn-danger btn-sm"><i class="fa-solid fa-times"></i> Refuser</button>
         </form>
       </div>
+      @elseif($review->statut === 'approuve')
+      <div class="review-actions" style="gap:10px;display:flex;flex-wrap:wrap;align-items:center">
+        <form action="{{ route('admin.moderation.reject', $review) }}" method="POST" style="display:inline" onsubmit="return confirm('Repasser cet avis en refusé ? Il ne sera plus visible publiquement.')">
+          @csrf
+          <button type="submit" class="btn-primary btn-danger btn-sm"><i class="fa-solid fa-times"></i> Retirer (refuser)</button>
+        </form>
+      </div>
+      @elseif($review->statut === 'refuse')
+      <div class="review-actions" style="gap:10px;display:flex;flex-wrap:wrap;align-items:center">
+        <form action="{{ route('admin.moderation.approve', $review) }}" method="POST" style="display:inline" onsubmit="return confirm('Approuver cet avis ? Il deviendra visible sur la fiche produit.')">
+          @csrf
+          <button type="submit" class="btn-primary btn-success btn-sm"><i class="fa-solid fa-check"></i> Approuver à la place</button>
+        </form>
+      </div>
+      @endif
     </div>
     @empty
     <div class="card" style="padding:40px;text-align:center">
-      <i class="fa-solid fa-check-circle" style="font-size:40px;color:var(--success);margin-bottom:12px"></i>
-      <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px">Aucun avis en attente</div>
-      <div style="font-size:13px;color:var(--muted)">Tous les avis ont été modérés.</div>
+      @if($mtab === 'en_attente')
+        <i class="fa-solid fa-check-circle" style="font-size:40px;color:var(--success);margin-bottom:12px"></i>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px">Aucun avis en attente</div>
+        <div style="font-size:13px;color:var(--muted)">Tous les avis ont été modérés. Consultez les onglets Approuvés ou Refusés.</div>
+      @elseif($mtab === 'approuve')
+        <i class="fa-regular fa-comment-dots" style="font-size:40px;color:var(--muted);margin-bottom:12px"></i>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px">Aucun avis approuvé</div>
+        <div style="font-size:13px;color:var(--muted)">Les avis validés apparaîtront ici.</div>
+      @else
+        <i class="fa-regular fa-comment-dots" style="font-size:40px;color:var(--muted);margin-bottom:12px"></i>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px">Aucun avis refusé</div>
+        <div style="font-size:13px;color:var(--muted)">Les avis refusés sont listés ici lorsque vous les rejetez.</div>
+      @endif
     </div>
     @endforelse
 
@@ -392,6 +624,73 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
       </div>
     </div>
     @endif
+    @endif
+
+    {{-- ═══════════ SECTION : VALIDATION PRODUITS ═══════════ --}}
+    @if($section === 'products_moderation' && isset($moderationProducts))
+    @php
+      $pmTab = $productModerationTab ?? 'en_attente';
+      $pmc = $moderationProductsCounts ?? ['en_attente' => 0, 'rejetes' => 0];
+    @endphp
+    <div class="page-title">Validation des produits vendeurs</div>
+    <div class="page-sub">Les nouveaux produits restent hors catalogue public jusqu'à approbation.</div>
+
+    <div class="top-tabs" style="flex-wrap:wrap">
+      <a href="{{ route('admin.produits.moderation', ['tab' => 'en_attente']) }}" class="top-tab {{ $pmTab === 'en_attente' ? 'active' : '' }}">En attente @if(($pmc['en_attente'] ?? 0) > 0)<span style="opacity:.85;font-weight:700">({{ $pmc['en_attente'] }})</span>@endif</a>
+      <a href="{{ route('admin.produits.moderation', ['tab' => 'rejetes']) }}" class="top-tab {{ $pmTab === 'rejetes' ? 'active' : '' }}">Refusés / masqués <span style="opacity:.85;font-weight:700">({{ $pmc['rejetes'] ?? 0 }})</span></a>
+    </div>
+
+    <div class="card">
+      <table class="table">
+        <thead>
+          <tr><th></th><th>Produit</th><th>Vendeur</th><th>Prix</th><th>Stock</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          @forelse($moderationProducts as $pitem)
+          <tr>
+            <td style="width:56px"><img src="{{ $pitem->imageUrl() }}" alt="" style="width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border)"></td>
+            <td>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--white)">{{ $pitem->nom }}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">{{ $pitem->categorie->nom ?? '—' }}</div>
+            </td>
+            <td>{{ $pitem->vendeur->nom ?? '—' }}</td>
+            <td>{{ money_fdj($pitem->prix) }}</td>
+            <td>{{ $pitem->stock }}</td>
+            <td>
+              @if($pmTab === 'en_attente' && $pitem->statut === 'en_attente_admin')
+              <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;max-width:280px">
+                <form action="{{ route('admin.produits.approve', $pitem) }}" method="POST" style="margin:0">
+                  @csrf
+                  <button type="submit" class="btn-primary btn-success btn-sm" style="border:none"><i class="fa-solid fa-check"></i> Valider et publier</button>
+                </form>
+                <form action="{{ route('admin.produits.reject', $pitem) }}" method="POST" style="margin:0;width:100%">
+                  @csrf
+                  <textarea name="motif" rows="2" placeholder="Motif pour le vendeur (optionnel)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--white);padding:8px;font-size:12px;resize:vertical;margin-bottom:6px;font-family:inherit"></textarea>
+                  <button type="submit" class="btn-primary btn-danger btn-sm" onclick="return confirm('Refuser ce produit ? Le vendeur sera notifié.')" style="border:none"><i class="fa-solid fa-times"></i> Refuser</button>
+                </form>
+              </div>
+              @elseif($pmTab === 'rejetes')
+              <span style="font-size:11px;color:var(--muted)">Non publié (inactif)</span>
+              @else
+              <span style="font-size:11px;color:var(--muted)">—</span>
+              @endif
+            </td>
+          </tr>
+          @empty
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:36px">{{ $pmTab === 'en_attente' ? 'Aucun produit en attente de validation.' : 'Aucun produit dans cette liste.' }}</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+      @if($moderationProducts->hasPages())
+      <div class="table-foot">
+        <span>Page {{ $moderationProducts->currentPage() }} / {{ $moderationProducts->lastPage() }}</span>
+        <div class="pag">
+          @if($moderationProducts->previousPageUrl())<a href="{{ $moderationProducts->previousPageUrl() }}">Précédent</a>@endif
+          @if($moderationProducts->nextPageUrl())<a href="{{ $moderationProducts->nextPageUrl() }}">Suivant</a>@endif
+        </div>
+      </div>
+      @endif
+    </div>
     @endif
 
     {{-- ═══════════ SECTION : CATÉGORIES ═══════════ --}}
@@ -419,6 +718,11 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
             <label>Description</label>
             <input type="text" name="description" placeholder="Description courte…">
           </div>
+          <div class="form-group">
+            <label>Image (optionnel)</label>
+            <input type="text" name="image_url" placeholder="URL https ou chemin relatif ex. images/ma-categorie.png">
+            <small style="color:var(--muted);display:block;margin-top:4px">Si vide, une image adaptée au nom est choisie automatiquement.</small>
+          </div>
           <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Ajouter</button>
         </form>
       </div>
@@ -439,7 +743,7 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
             <td>{{ $cat->produits_count ?? 0 }}</td>
             <td>
               <div class="table-actions">
-                <button class="tbl-btn" onclick="openEditCat({{ $cat->id }}, '{{ addslashes($cat->nom) }}', '{{ addslashes($cat->description ?? '') }}', '{{ addslashes($cat->icone ?? '') }}')" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="tbl-btn" onclick="openEditCat({{ $cat->id }}, @json($cat->nom), @json($cat->description ?? ''), @json($cat->icone ?? ''), @json($cat->image_url ?? ''))" title="Modifier"><i class="fa-solid fa-pen"></i></button>
                 <form action="{{ route('admin.categories.destroy', $cat) }}" method="POST" style="display:inline" onsubmit="return confirm('Supprimer cette catégorie ?')">
                   @csrf @method('DELETE')
                   <button type="submit" class="tbl-btn del" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
@@ -471,6 +775,10 @@ footer a{color:var(--muted);margin-left:16px}footer a:hover{color:var(--orange)}
           <div class="form-group">
             <label>Icône</label>
             <input type="text" name="icone" id="editCatIcone">
+          </div>
+          <div class="form-group">
+            <label>Image (URL ou chemin)</label>
+            <input type="text" name="image_url" id="editCatImage" placeholder="Laisser vide pour image automatique selon le nom">
           </div>
           <div style="display:flex;gap:10px;margin-top:16px">
             <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Enregistrer</button>
@@ -552,11 +860,12 @@ new Chart(dCtx, {
 
 @if($section === 'categories')
 <script>
-function openEditCat(id, nom, desc, icone) {
+function openEditCat(id, nom, desc, icone, imageUrl) {
   document.getElementById('editCatForm').action = '/admin/categories/' + id;
-  document.getElementById('editCatNom').value = nom;
-  document.getElementById('editCatDesc').value = desc;
-  document.getElementById('editCatIcone').value = icone;
+  document.getElementById('editCatNom').value = nom || '';
+  document.getElementById('editCatDesc').value = desc || '';
+  document.getElementById('editCatIcone').value = icone || '';
+  document.getElementById('editCatImage').value = imageUrl || '';
   document.getElementById('editCatModal').classList.add('open');
 }
 document.getElementById('editCatModal').addEventListener('click', function(e) {

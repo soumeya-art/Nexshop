@@ -12,12 +12,12 @@ class BuyerController extends Controller
     public function home(Request $request)
     {
         $query = Produit::with(['categorie', 'vendeur'])
-            ->where('statut', 'actif');
+            ->actif();
 
         if ($request->filled('q')) {
             $query->where(function ($q) use ($request) {
-                $q->where('nom', 'like', '%' . $request->q . '%')
-                  ->orWhere('description', 'like', '%' . $request->q . '%');
+                $q->where('nom', 'like', '%'.$request->q.'%')
+                    ->orWhere('description', 'like', '%'.$request->q.'%');
             });
         }
 

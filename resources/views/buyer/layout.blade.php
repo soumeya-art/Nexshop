@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="messaging-heartbeat-url" content="{{ auth()->check() ? route('messaging.heartbeat') : '' }}">
+<meta name="messaging-unread-url" content="{{ auth()->check() ? route('messaging.unread') : '' }}">
+@include('partials.theme-init')
 <title>@yield('title', 'Espace Acheteur') — NexShop</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -37,6 +41,8 @@ body.buyer-app .nav-logo span{color:var(--orange)}
 .nav-avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--orange);overflow:hidden;cursor:pointer;background:var(--bg3)}
 .nav-avatar img{width:100%;height:100%;object-fit:cover}
 .page-container{max-width:1280px;margin:0 auto;padding:28px 40px;flex:1}
+@media(max-width:900px){body.buyer-app .page-container{padding:18px clamp(14px,4vw,24px)}}
+@media(max-width:480px){body.buyer-app .page-container{padding:14px clamp(12px,3vw,18px)}}
 .hero{border-radius:var(--radius);overflow:hidden;margin-bottom:24px;position:relative;height:170px;background:linear-gradient(135deg,#0a1628,#001a40 50%,#0d0d0d);border:1px solid var(--border)}
 .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,107,53,.1),transparent 60%)}
 .hero-img{position:absolute;right:0;top:0;height:100%;width:45%;object-fit:cover;opacity:.2}
@@ -97,7 +103,9 @@ body.buyer-app .nav-logo span{color:var(--orange)}
 .pagination a:hover{border-color:var(--orange);color:var(--orange)}
 .pagination .current{background:rgba(255,107,53,.2);border-color:var(--orange);color:var(--orange)}
 </style>
+@stack('head')
 @stack('styles')
+@include('partials.theme-manager')
 </head>
 <body class="buyer-app">
 
@@ -108,6 +116,12 @@ body.buyer-app .nav-logo span{color:var(--orange)}
     <input type="text" name="q" value="{{ request('q') }}" placeholder="Rechercher un produit…">
   </form>
   <div class="nav-right">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false"><i class="fa-regular fa-moon" aria-hidden="true"></i><span class="theme-toggle-label">Thème</span></button>
+    @php $notifCount = auth()->user()->buyerNotifications()->where('lu', false)->count(); @endphp
+    <a href="{{ route('buyer.notifications.index') }}" class="nav-icon" title="Notifications">
+      <i class="fa-regular fa-bell"></i>
+      @if($notifCount > 0)<span class="nav-badge">{{ $notifCount }}</span>@endif
+    </a>
     <a href="{{ route('buyer.favorites.index') }}" class="nav-icon" title="Favoris"><i class="fa-regular fa-heart"></i></a>
     <a href="{{ route('buyer.cart.index') }}" class="nav-icon" title="Panier">
       <i class="fa-solid fa-bag-shopping"></i>
@@ -115,7 +129,7 @@ body.buyer-app .nav-logo span{color:var(--orange)}
       @if($cartCount > 0)<span class="nav-badge">{{ $cartCount }}</span>@endif
     </a>
     <a href="{{ route('buyer.profile.edit') }}" class="nav-avatar" title="Mon profil">
-      <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->nom) }}&background=FF6B35&color=fff" alt="">
+      <img src="{{ auth()->user()->avatar ? asset('storage/'.auth()->user()->avatar) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->nom).'&background=FF6B35&color=fff' }}" alt="">
     </a>
   </div>
 </nav>
@@ -123,7 +137,19 @@ body.buyer-app .nav-logo span{color:var(--orange)}
 <div class="sub-nav">
   <div class="sub-nav-inner">
     <a href="{{ route('buyer.home') }}" class="nav-tab {{ request()->routeIs('buyer.home') ? 'active' : '' }}">Explorer</a>
+    @php
+      $messagesUnreadNav = \App\Models\Message::query()
+        ->whereHas('conversation', fn ($q) => $q->forUser(auth()->id()))
+        ->where('sender_id', '!=', auth()->id())
+        ->whereNull('read_at')
+        ->count();
+    @endphp
+    <a href="{{ route('buyer.messages.index') }}" class="nav-tab {{ request()->routeIs('buyer.messages.*') ? 'active' : '' }}">
+      Messages
+      <span data-messaging-unread-badge class="nav-badge" style="position:static;margin-left:6px;{{ $messagesUnreadNav > 0 ? '' : 'display:none;' }}">{{ $messagesUnreadNav > 99 ? '99+' : $messagesUnreadNav }}</span>
+    </a>
     <a href="{{ route('buyer.orders.index') }}" class="nav-tab {{ request()->routeIs('buyer.orders.*') ? 'active' : '' }}">Mes Commandes</a>
+    <a href="{{ route('buyer.returns.index') }}" class="nav-tab {{ request()->routeIs('buyer.returns.*') ? 'active' : '' }}">Retours</a>
     <a href="{{ route('buyer.profile.edit') }}" class="nav-tab {{ request()->routeIs('buyer.profile.*') ? 'active' : '' }}">Mon Profil</a>
     <form action="{{ route('logout') }}" method="post" style="margin-left:auto;display:flex;align-items:center">
       @csrf
@@ -138,6 +164,9 @@ body.buyer-app .nav-logo span{color:var(--orange)}
   @endif
   @if(session('error'))
     <div class="alert alert-error"><i class="fa-solid fa-exclamation-circle"></i> {{ session('error') }}</div>
+  @endif
+  @if(session('info'))
+    <div class="alert alert-success" style="border-color:rgba(30,144,255,.35);background:rgba(30,144,255,.1);color:#93c5fd"><i class="fa-solid fa-circle-info"></i> {{ session('info') }}</div>
   @endif
   @if($errors->any())
     <div class="alert alert-error"><i class="fa-solid fa-exclamation-circle"></i> {{ $errors->first() }}</div>
@@ -170,17 +199,17 @@ body.buyer-app .nav-logo span{color:var(--orange)}
     <div>
       <div class="f-col-title">Informations</div>
       <ul class="f-links">
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>À propos</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Politique de livraison</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>CGU & CGV</a></li>
-        <li><a href="#"><i class="fa-solid fa-chevron-right"></i>Confidentialité</a></li>
+        <li><a href="{{ route('buyer.pages.about') }}"><i class="fa-solid fa-chevron-right"></i>À propos</a></li>
+        <li><a href="{{ route('buyer.pages.livraison') }}"><i class="fa-solid fa-chevron-right"></i>Politique de livraison</a></li>
+        <li><a href="{{ route('buyer.pages.cgv') }}"><i class="fa-solid fa-chevron-right"></i>CGU & CGV</a></li>
+        <li><a href="{{ route('buyer.pages.confidentialite') }}"><i class="fa-solid fa-chevron-right"></i>Confidentialité</a></li>
       </ul>
     </div>
     <div>
       <div class="f-col-title">Contact</div>
       <div class="f-contact"><i class="fa-solid fa-location-dot"></i><span>Djibouti, République de Djibouti</span></div>
-      <div class="f-contact"><i class="fa-solid fa-phone"></i><span>+253 77 00 00 00</span></div>
-      <div class="f-contact"><i class="fa-solid fa-envelope"></i><span>contact@nexshop.dj</span></div>
+      <div class="f-contact"><i class="fa-solid fa-phone"></i><span>+253 77 44 78 73</span></div>
+      <div class="f-contact"><i class="fa-solid fa-envelope"></i><span>nexshop.dj@gmail.com</span></div>
       <div class="f-contact"><i class="fa-solid fa-clock"></i><span>Lun–Sam : 8h – 17h</span></div>
     </div>
   </div>
@@ -194,6 +223,7 @@ body.buyer-app .nav-logo span{color:var(--orange)}
   </div>
 </footer>
 
+@vite(['resources/js/app.js'])
 @stack('scripts')
 </body>
 </html>
