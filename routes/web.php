@@ -8,6 +8,13 @@ use App\Http\Controllers\Web\Buyer\CartController;
 use App\Http\Controllers\Web\Buyer\OrderController;
 use App\Http\Controllers\Web\Buyer\FavoriteController;
 use App\Http\Controllers\Web\Buyer\ProfileController;
+use App\Http\Controllers\Web\Admin\AdminController;
+use App\Http\Controllers\Web\Admin\AdminUserController;
+use App\Http\Controllers\Web\Admin\AdminModerationController;
+use App\Http\Controllers\Web\Admin\AdminCategoryController;
+use App\Http\Controllers\Web\Seller\SellerController;
+use App\Http\Controllers\Web\Seller\SellerProductController;
+use App\Http\Controllers\Web\Seller\SellerOrderController;
 
 // Page d'accueil
 Route::get('/', fn() => view('welcome'))->name('home');
@@ -25,10 +32,34 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// Pages protégées (connecté uniquement)
-Route::middleware('auth')->group(function () {
-    Route::get('/seller', fn() => view('seller.seller'))->name('seller.home');
-    Route::get('/admin',  fn() => view('admin.admin'))->name('admin.home');
+// ── Interface Admin (admin uniquement) ─────────────────────
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'dashboard'])->name('home');
+
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+    Route::post('/users/{user}/toggle-ban', [AdminUserController::class, 'toggleBan'])->name('users.toggleBan');
+
+    Route::get('/moderation', [AdminModerationController::class, 'index'])->name('moderation');
+    Route::post('/moderation/{avi}/approve', [AdminModerationController::class, 'approve'])->name('moderation.approve');
+    Route::post('/moderation/{avi}/reject', [AdminModerationController::class, 'reject'])->name('moderation.reject');
+
+    Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories');
+    Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+});
+
+// ── Interface Vendeur (vendeur uniquement) ──────────────────
+Route::middleware(['auth', 'role:vendeur'])->prefix('seller')->name('seller.')->group(function () {
+    Route::get('/', [SellerController::class, 'dashboard'])->name('home');
+
+    Route::get('/products', [SellerProductController::class, 'index'])->name('products');
+    Route::post('/products', [SellerProductController::class, 'store'])->name('products.store');
+    Route::put('/products/{product}', [SellerProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [SellerProductController::class, 'destroy'])->name('products.destroy');
+
+    Route::get('/orders', [SellerOrderController::class, 'index'])->name('orders');
+    Route::post('/orders/{order}/status', [SellerOrderController::class, 'updateStatus'])->name('orders.status');
 });
 
 // ── Interface Acheteur (client uniquement) ─────────────────────
