@@ -22,4 +22,4 @@ RUN chmod -R 775 storage bootstrap/cache
 EXPOSE 10000
 
 # Lancement propre
-CMD php artisan optimize:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
+CMD php artisan optimize:clear && php artisan migrate --force && php artisan db:seed --class=NexshopDemoSeeder && php artisan serve --host=0.0.0.0 --port=10000
