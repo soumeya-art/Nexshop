@@ -1,27 +1,25 @@
 FROM php:8.4-cli
 
-# Installer dépendances système
+# Dépendances système
 RUN apt-get update && apt-get install -y \
-    git unzip curl libpng-dev libonig-dev libxml2-dev zip
+    git unzip curl libpng-dev libonig-dev libxml2-dev zip libpq-dev
 
-# Installer extensions PHP nécessaires à Laravel
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+# Extensions PHP (IMPORTANT : PostgreSQL)
+RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
-# Installer Composer
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copier le projet
 WORKDIR /app
 COPY . .
 
-# Installer les dépendances Laravel
+# Installer Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Donner les permissions
+# Permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-# Port utilisé par Render
 EXPOSE 10000
 
-# Lancer Laravel
-CMD php artisan tinker --execute="dump(config('database.default'));" && php artisan optimize:clear && php artisan config:cache && php artisan cache:clear && php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
+# Lancement propre
+CMD php artisan optimize:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
