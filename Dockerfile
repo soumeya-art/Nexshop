@@ -14,7 +14,7 @@ WORKDIR /app
 COPY . .
 
 # Installer Laravel
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader npm install && npm run build
 
 # Permissions
 RUN chmod -R 775 storage bootstrap/cache
