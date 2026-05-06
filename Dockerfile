@@ -1,5 +1,7 @@
-# PHP stage
-FROM php:8.4-cli
+# --------------------
+# PHP + Composer stage
+# --------------------
+FROM php:8.4-cli AS php
 
 RUN apt-get update && apt-get install -y \
     git unzip curl libpng-dev libonig-dev libxml2-dev zip libpq-dev
@@ -14,8 +16,10 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader
 
 
-# Node stage
-FROM node:20
+# --------------------
+# Node stage (BUILD assets)
+# --------------------
+FROM node:20 AS node
 
 WORKDIR /app
 COPY . .
@@ -24,17 +28,22 @@ RUN npm install
 RUN npm run build
 
 
-# Final stage
+# --------------------
+# Final stage (runtime)
+# --------------------
 FROM php:8.4-cli
 
 WORKDIR /app
 
-COPY --from=0 /app /app
-COPY --from=1 /app/public/build /app/public/build
-
 RUN apt-get update && apt-get install -y libpq-dev \
  && docker-php-ext-install pdo pdo_pgsql
 
+COPY --from=php /app /app
+COPY --from=node /app/public/build /app/public/build
+
 EXPOSE 10000
 
-CMD npm install && npm run build && php artisan optimize:clear  && php artisan migrate --force && php artisan db:seed --force && php artisan serve --host 0.0.0.0 --port 10000
+CMD php artisan migrate --force \
+ && php artisan db:seed --force \
+ && php artisan optimize:clear \
+ && php artisan serve --host 0.0.0.0 --port 10000
