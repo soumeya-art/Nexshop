@@ -26,7 +26,7 @@ COPY . .
 
 RUN npm install
 RUN npm run build
-
+RUN ls -la public/build || echo "NO BUILD FOUND"
 
 # --------------------
 # Final stage (runtime)
@@ -43,7 +43,4 @@ COPY --from=node /app/public/build /app/public/build
 
 EXPOSE 10000
 
-CMD php artisan migrate --force \
- && php artisan db:seed --force \
- && php artisan optimize:clear \
- && php artisan serve --host 0.0.0.0 --port 10000
+sh -c "test -f public/build/manifest.json || npm install && npm run build; php artisan optimize:clear && php artisan serve --host 0.0.0.0 --port 10000"
