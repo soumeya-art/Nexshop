@@ -10,7 +10,7 @@
 <title>@yield('title', 'Espace Acheteur') — NexShop</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="{{ asset('css/app.css') }}">
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <style>
 :root{
   --bg:#0D0D0D;--bg2:#141414;--bg3:#1C1C1C;
